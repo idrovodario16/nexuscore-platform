@@ -98,9 +98,9 @@ npm start
 
 ```bash
 curl http://localhost:3000/v1/operations \
-+  -H "Authorization: Bearer $API_KEY" \
-+  -H "X-Organization-ID: $ORGANIZATION_ID"
-+```
+  -H "Authorization: Bearer $API_KEY" \
+  -H "X-Organization-ID: $ORGANIZATION_ID"
+```
 
 En PowerShell usa `curl.exe` y las variables `$env:API_KEY`, `$env:ORGANIZATION_ID`. Consulta el [contrato OpenAPI](docs/openapi.json) para cuerpos y respuestas. La API solo acepta la organización configurada para esta instancia. No hay un proveedor de identidad, gestión de usuarios ni RBAC de producción implementados aún.
 
@@ -163,7 +163,7 @@ Las demos guardan sus conjuntos por separado en localStorage, con claves distint
 
 ### Integración entre APIs, fuera de Pages
 
-NexusCore escribe la operación y su evento en la misma transacción de PostgreSQL (**outbox**). El relay de este repositorio consulta `GET /v1/events` y entrega lotes a `POST /v1/events` de NexusInsight. Insight valida el contrato v1, registra el identificador del evento en **inbox** y actualiza la instantánea solo si su revisión es mayor. El relay guarda el checkpoint después de una respuesta exitosa y reintenta fallos temporales; una repetición se procesa sin doble conteo.
+NexusCore escribe la operación y su evento en la misma transacción de PostgreSQL (**outbox**). El relay de `nexus-architecture` consulta `GET /v1/events` y entrega lotes a `POST /v1/events` de NexusInsight. Insight valida el contrato v1, registra el identificador del evento en **inbox** y actualiza la instantánea solo si su revisión es mayor. El relay guarda el checkpoint después de una respuesta exitosa y reintenta fallos temporales; una repetición se procesa sin doble conteo.
 
 Cada API tiene su propia base PostgreSQL. Core puede operar sin Insight, e Insight puede consumir otra fuente compatible. El flujo es de **Core hacia Insight**; Insight no modifica las operaciones de Core. Las interfaces públicas todavía no están conectadas a esas APIs: para probar el flujo HTTP hay que ejecutar los servicios y el relay localmente.
 
