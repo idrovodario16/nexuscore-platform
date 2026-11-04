@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/idrovodario16/nexus-architecture/blob/main/contracts/operation.upserted.v1.schema.json",
+  "title": "OperationUpsertedV1",
+  "description": "Snapshot completo. organization_id del sobre debe coincidir con data.organization_id. Solo una revisión mayor sustituye al registro anterior.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "type",
+    "schema_version",
+    "source",
+    "organization_id",
+    "occurred_at",
+    "data"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "operation.upserted.v1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "source": {
+      "const": "nexuscore"
+    },
+    "organization_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "organization_id",
+        "title",
+        "sector",
+        "status",
+        "amount_cents",
+        "revision",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "enum": [
+            "logistics",
+            "retail",
+            "services"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "in_progress",
+            "completed",
+            "cancelled"
+          ]
+        },
+        "amount_cents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

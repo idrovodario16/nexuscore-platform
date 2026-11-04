@@ -1,0 +1,1 @@
+import {Pool} from 'pg';import {readFile} from 'node:fs/promises';const pool=new Pool({connectionString:process.env.DATABASE_URL});try{await pool.query(await readFile(new URL('../db/001_init.sql',import.meta.url),'utf8'));console.log('Schema v1 ready');}finally{await pool.end();}

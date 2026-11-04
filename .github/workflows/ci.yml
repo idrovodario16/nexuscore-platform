@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: ci-fictional-password
+          POSTGRES_DB: nexus
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U nexus -d nexus"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://nexus:ci-fictional-password@localhost:5432/nexus
+      API_KEY: ci-fictional-key-at-least-32-characters
+      ORGANIZATION_ID: 11111111-1111-4111-8111-111111111111
+      RUN_INTEGRATION: '1'
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm ci
+        working-directory: api
+      - run: npm run migrate
+        working-directory: api
+      - run: npm test
+        working-directory: api
+      - run: docker build -f api/Dockerfile -t nexus-api-ci .
+      - run: docker build -f Dockerfile.web -t nexus-web-ci .

@@ -1,0 +1,1 @@
+import {createApp} from './interfaces/http.js';const {app,pool}=await createApp();await app.listen(Number(process.env.PORT||3000),'0.0.0.0');async function shutdown(){await app.close();await pool.end();}process.once('SIGINT',shutdown);process.once('SIGTERM',shutdown);

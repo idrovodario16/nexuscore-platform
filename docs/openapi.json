@@ -1,0 +1,452 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NexusCore API",
+    "version": "0.1.0",
+    "description": "Servicio local. Una organización por instancia. El frontend público funciona en modo demo autónomo."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": [],
+      "Organization": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "Organization": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Organization-ID"
+      }
+    },
+    "schemas": {
+      "Operation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "organization_id",
+          "title",
+          "sector",
+          "status",
+          "amount_cents",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "sector": {
+            "type": "string",
+            "enum": [
+              "logistics",
+              "retail",
+              "services"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Event": {
+        "title": "OperationUpsertedV1",
+        "description": "Snapshot completo. organization_id del sobre debe coincidir con data.organization_id. Solo una revisión mayor sustituye al registro anterior.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "type",
+          "schema_version",
+          "source",
+          "organization_id",
+          "occurred_at",
+          "data"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "const": "operation.upserted.v1"
+          },
+          "schema_version": {
+            "const": 1
+          },
+          "source": {
+            "const": "nexuscore"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "organization_id",
+              "title",
+              "sector",
+              "status",
+              "amount_cents",
+              "revision",
+              "created_at",
+              "updated_at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "organization_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 120
+              },
+              "sector": {
+                "type": "string",
+                "enum": [
+                  "logistics",
+                  "retail",
+                  "services"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "in_progress",
+                  "completed",
+                  "cancelled"
+                ]
+              },
+              "amount_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service liveness (not a database readiness guarantee)"
+          }
+        }
+      }
+    },
+    "/v1/operations": {
+      "get": {
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Operation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing/invalid key"
+          },
+          "403": {
+            "description": "Organization rejected"
+          },
+          "409": {
+            "description": "Revision/transition conflict"
+          },
+          "422": {
+            "description": "Schema validation failed"
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "title",
+                  "sector",
+                  "amount_cents"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 120
+                  },
+                  "sector": {
+                    "type": "string",
+                    "enum": [
+                      "logistics",
+                      "retail",
+                      "services"
+                    ]
+                  },
+                  "amount_cents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing/invalid key"
+          },
+          "403": {
+            "description": "Organization rejected"
+          },
+          "409": {
+            "description": "Revision/transition conflict"
+          },
+          "422": {
+            "description": "Schema validation failed"
+          }
+        }
+      }
+    },
+    "/v1/operations/{id}": {
+      "patch": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "status",
+                  "expected_revision"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "completed",
+                      "cancelled"
+                    ]
+                  },
+                  "expected_revision": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing/invalid key"
+          },
+          "403": {
+            "description": "Organization rejected"
+          },
+          "404": {
+            "description": "Operation not found"
+          },
+          "409": {
+            "description": "Revision/transition conflict"
+          },
+          "422": {
+            "description": "Schema validation failed"
+          }
+        }
+      }
+    },
+    "/v1/events": {
+      "get": {
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "$ref": "#/components/schemas/Event"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing/invalid key"
+          },
+          "403": {
+            "description": "Organization rejected"
+          },
+          "409": {
+            "description": "Revision/transition conflict"
+          },
+          "422": {
+            "description": "Schema validation failed"
+          }
+        }
+      }
+    }
+  }
+}
