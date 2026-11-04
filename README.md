@@ -1,10 +1,13 @@
 # NexusCore
 
+[**Abrir demo en GitHub Pages →**](https://idrovodario16.github.io/nexuscore-platform/)
+
+
 **Resumen técnico:** gestión de operaciones y estados con TypeScript/JavaScript, React y una API NestJS sobre Node.js. Base de datos PostgreSQL. Arquitectura de monolito modular por capas, con dominio, casos de uso, repositorio y outbox transaccional. Funciona de forma independiente y se integra con NexusInsight mediante eventos versionados. Demo React con localStorage; API ejecutable por separado.
 
 Plataforma de gestión operativa multisectorial. Registra operaciones, controla su ciclo de trabajo y genera eventos para análisis externo.
 
-[![CI](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml) · [Demo web](https://nexuscore-idrovodario16-demo.brownlyric131.chatgpt.site/) · [Código de NexusInsight](https://github.com/idrovodario16/nexusinsight-analytics) · [Arquitectura compartida](https://github.com/idrovodario16/nexus-architecture)
+[![CI](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml) · [Demo web](https://idrovodario16.github.io/nexuscore-platform/) · [Código de NexusInsight](https://github.com/idrovodario16/nexusinsight-analytics) · [Arquitectura compartida](https://github.com/idrovodario16/nexus-architecture)
 
 ## Qué puedes probar
 
@@ -135,7 +138,7 @@ npm run build
 
 Para NestJS: `cd api`, `npm ci`, `npm test`. Las pruebas de integración requieren PostgreSQL y `RUN_INTEGRATION=1`, junto con las variables de conexión y acceso. Sin ese indicador se omiten explícitamente; no se simula una validación real de PostgreSQL. CI levanta PostgreSQL 16 y ejecuta esas pruebas. Ver [estrategia y criterios](docs/testing.md).
 
-La demo enlazada arriba se aloja en **Sites**, con acceso público. El código fuente y los README están en GitHub. El flujo `ci.yml` valida reglas, compila la web y construye los contenedores. Se incluye `pages.yml` como alternativa opcional para GitHub Pages: requiere seleccionar **Settings → Pages → Source → GitHub Actions** y ejecutar el flujo de despliegue. Un cambio en GitHub no actualiza automáticamente Sites; hay que publicar una nueva versión de la compilación. El historial de Actions muestra el estado real de cada verificación.
+La demo principal se publica en **GitHub Pages** mediante `.github/workflows/pages.yml` al actualizar `main`. El flujo ejecuta pruebas y compila React antes de desplegar `dist/`. GitHub Pages aloja solo el frontend; las APIs y PostgreSQL se ejecutan por separado. Las versiones previas de Sites son alojamientos independientes y no se actualizan con este flujo. El historial de Actions muestra el estado real de cada publicación.
 
 ## Alcance y evolución
 
@@ -146,3 +149,23 @@ Siguientes etapas: interfaz conectada a API, identidad OIDC/RBAC, múltiples org
 Autor: **Darío Idrovo** · Licencia [MIT](LICENSE).
 
 Consulta [cómo se publicaron las demos](docs/deployment.md), sus límites y cómo actualizar el alojamiento.
+
+## Probar la integración entre las demos
+
+1. Abre [NexusCore](https://idrovodario16.github.io/nexuscore-platform/) y crea una operación ficticia con un título fácil de reconocer.
+2. Avanza su estado de **Pendiente → En curso → Completada**. Cada cambio aumenta su revisión.
+3. Pulsa **Exportar eventos** para descargar las instantáneas JSON de todas las operaciones.
+4. Abre [NexusInsight](https://idrovodario16.github.io/nexusinsight-analytics/) y pulsa **Importar eventos** para seleccionar ese archivo.
+5. Busca el título de la operación y revisa los indicadores. Puedes exportar el conjunto filtrado a CSV.
+6. Importa el mismo archivo otra vez: no se duplican las operaciones ni se incrementan los indicadores. Una revisión anterior tampoco sobrescribe una más reciente.
+
+Las demos guardan sus conjuntos por separado en localStorage, con claves distintas. **No se sincronizan automáticamente**, aunque estén bajo el mismo dominio de GitHub Pages. Para reflejar un cambio posterior debes volver a exportar e importar. La vista **Integración** de cada producto explica el recorrido y enlaza al otro.
+
+### Integración entre APIs, fuera de Pages
+
+NexusCore escribe la operación y su evento en la misma transacción de PostgreSQL (**outbox**). El relay de este repositorio consulta `GET /v1/events` y entrega lotes a `POST /v1/events` de NexusInsight. Insight valida el contrato v1, registra el identificador del evento en **inbox** y actualiza la instantánea solo si su revisión es mayor. El relay guarda el checkpoint después de una respuesta exitosa y reintenta fallos temporales; una repetición se procesa sin doble conteo.
+
+Cada API tiene su propia base PostgreSQL. Core puede operar sin Insight, e Insight puede consumir otra fuente compatible. El flujo es de **Core hacia Insight**; Insight no modifica las operaciones de Core. Las interfaces públicas todavía no están conectadas a esas APIs: para probar el flujo HTTP hay que ejecutar los servicios y el relay localmente.
+
+[Guía visual de integración](https://idrovodario16.github.io/nexus-architecture/) · [Contratos y ejecución local](https://github.com/idrovodario16/nexus-architecture#integración-real-paso-a-paso)
+
