@@ -1,5 +1,7 @@
 # NexusCore
 
+**Resumen técnico:** gestión de operaciones y estados con TypeScript/JavaScript, React y una API NestJS sobre Node.js. Base de datos PostgreSQL. Arquitectura de monolito modular por capas, con dominio, casos de uso, repositorio y outbox transaccional. Funciona de forma independiente y se integra con NexusInsight mediante eventos versionados. Demo React con localStorage; API ejecutable por separado.
+
 Plataforma de gestión operativa multisectorial. Registra operaciones, controla su ciclo de trabajo y genera eventos para análisis externo.
 
 [![CI](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml) · [Demo web](https://nexuscore-idrovodario16-demo.brownlyric131.chatgpt.site/) · [Código de NexusInsight](https://github.com/idrovodario16/nexusinsight-analytics) · [Arquitectura compartida](https://github.com/idrovodario16/nexus-architecture)
