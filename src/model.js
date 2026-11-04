@@ -11,4 +11,6 @@ export function metrics(rows){const completed=rows.filter(r=>r.status==='complet
 export function snapshotEvents(rows){return rows.map(r=>({event_id:crypto.randomUUID(),type:'operation.upserted.v1',schema_version:1,source:'nexuscore',organization_id:r.organization_id,occurred_at:r.updated_at,data:r}));}
 export function changeStatus(row,status){if(!(transitions[row.status]||[]).includes(status))throw new Error('Transición no permitida');return {...row,status,revision:row.revision+1,updated_at:new Date().toISOString()};}
 export function download(name,content,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-export function csv(rows){const fields=['id','title','sector','status','amount_cents','revision','created_at'];return [fields.join(','),...rows.map(r=>fields.map(k=>'"'+String(r[k]).replaceAll('"','""')+'"').join(','))].join('\r\n');}
+export function csv(rows){const fields=['id','title','sector','status','amount_cents','revision','created_at'];return [fields.join(','),...rows.map(r=>fields.map(k=>'"'+safeCell(r[k]).replaceAll('"','""')+'"').join(','))].join('\r\n');}
+
+function safeCell(value){const text=String(value);return /^[=+@\t\r-]/.test(text)?"'"+text:text;}
