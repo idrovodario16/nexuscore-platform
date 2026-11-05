@@ -1,13 +1,12 @@
 # NexusCore
 
-[**Abrir demo en GitHub Pages →**](https://idrovodario16.github.io/nexuscore-platform/)
+MVP de gestión operativa multisectorial. Permite registrar operaciones, controlar estados y emitir eventos versionados para análisis externo.
 
+**Stack:** React y JavaScript en la demo; TypeScript, Node.js/NestJS y PostgreSQL en la API.
 
-**Resumen técnico:** gestión de operaciones y estados con TypeScript/JavaScript, React y una API NestJS sobre Node.js. Base de datos PostgreSQL. Arquitectura de monolito modular por capas, con dominio, casos de uso, repositorio y outbox transaccional. Funciona de forma independiente y se integra con NexusInsight mediante eventos versionados. Demo React con localStorage; API ejecutable por separado.
+**Estado:** demo autónoma con localStorage y API separada. La interfaz todavía no consume la API. No incluye OIDC/RBAC ni operación SaaS de producción.
 
-Plataforma de gestión operativa multisectorial. Registra operaciones, controla su ciclo de trabajo y genera eventos para análisis externo.
-
-[![CI](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/idrovodario16/nexuscore-platform/actions/workflows/ci.yml) · [Demo web](https://idrovodario16.github.io/nexuscore-platform/) · [Código de NexusInsight](https://github.com/idrovodario16/nexusinsight-analytics) · [Arquitectura compartida](https://github.com/idrovodario16/nexus-architecture)
+[Demo web](https://idrovodario16.github.io/nexuscore-platform/)
 
 ## Qué puedes probar
 
@@ -150,22 +149,7 @@ Autor: **Darío Idrovo** · Licencia [MIT](LICENSE).
 
 Consulta [cómo se publicaron las demos](docs/deployment.md), sus límites y cómo actualizar el alojamiento.
 
-## Probar la integración entre las demos
 
-1. Abre [NexusCore](https://idrovodario16.github.io/nexuscore-platform/) y crea una operación ficticia con un título fácil de reconocer.
-2. Avanza su estado de **Pendiente → En curso → Completada**. Cada cambio aumenta su revisión.
-3. Pulsa **Exportar eventos** para descargar las instantáneas JSON de todas las operaciones.
-4. Abre [NexusInsight](https://idrovodario16.github.io/nexusinsight-analytics/) y pulsa **Importar eventos** para seleccionar ese archivo.
-5. Busca el título de la operación y revisa los indicadores. Puedes exportar el conjunto filtrado a CSV.
-6. Importa el mismo archivo otra vez: no se duplican las operaciones ni se incrementan los indicadores. Una revisión anterior tampoco sobrescribe una más reciente.
+## Integración
 
-Las demos guardan sus conjuntos por separado en localStorage, con claves distintas. **No se sincronizan automáticamente**, aunque estén bajo el mismo dominio de GitHub Pages. Para reflejar un cambio posterior debes volver a exportar e importar. La vista **Integración** de cada producto explica el recorrido y enlaza al otro.
-
-### Integración entre APIs, fuera de Pages
-
-NexusCore escribe la operación y su evento en la misma transacción de PostgreSQL (**outbox**). El relay de `nexus-architecture` consulta `GET /v1/events` y entrega lotes a `POST /v1/events` de NexusInsight. Insight valida el contrato v1, registra el identificador del evento en **inbox** y actualiza la instantánea solo si su revisión es mayor. El relay guarda el checkpoint después de una respuesta exitosa y reintenta fallos temporales; una repetición se procesa sin doble conteo.
-
-Cada API tiene su propia base PostgreSQL. Core puede operar sin Insight, e Insight puede consumir otra fuente compatible. El flujo es de **Core hacia Insight**; Insight no modifica las operaciones de Core. Las interfaces públicas todavía no están conectadas a esas APIs: para probar el flujo HTTP hay que ejecutar los servicios y el relay localmente.
-
-[Guía visual de integración](https://idrovodario16.github.io/nexus-architecture/) · [Contratos y ejecución local](https://github.com/idrovodario16/nexus-architecture#integración-real-paso-a-paso)
-
+Consulta [Nexus Architecture](https://github.com/idrovodario16/nexus-architecture) para el recorrido de exportación/importación JSON y la ejecución del relay HTTP. Las demos no se sincronizan automáticamente.
