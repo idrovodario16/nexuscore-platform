@@ -8,6 +8,7 @@
     "start": "node dist/src/main.js",
     "migrate": "node scripts/migrate.mjs",
     "seed": "node scripts/seed.mjs",
+    "seed:workspace": "node scripts/seed-workspace.mjs",
     "test": "npm run build && node --test dist/test/*.test.js"
   },
   "dependencies": {

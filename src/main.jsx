@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import fixtures from './fixtures.json';
 import {sectors,statuses,transitions,metrics,changeStatus,mergeEvents,snapshotEvents,operationSchema,download,csv,ORGANIZATION_ID} from './model';
 import './style.css';
+import {Workspace} from './workspace';
 const ANALYTICS=false;
 const NAME=ANALYTICS?'NexusInsight':'NexusCore';
 const REPO=ANALYTICS?'nexusinsight-analytics':'nexuscore-platform';
@@ -42,4 +43,8 @@ function App(){
   {modal&&<div className="overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(false);}}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="new-title"><button className="close" aria-label="Cerrar formulario" onClick={()=>setModal(false)}>×</button><span className="eyebrow">NEXUSCORE / NUEVO REGISTRO</span><h2 id="new-title">Crea una operación</h2><p>Usa datos ficticios. Se guardará solo en este navegador.</p><form onSubmit={create}><label>Título<input name="title" autoFocus required minLength={3} maxLength={120} placeholder="Ej. Inspección de bodega"/></label><label>Sector<select name="sector">{Object.entries(sectors).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label><label>Monto de la operación (USD)<input name="amount" type="number" required min="0" max="10000000" step="0.01" defaultValue="250"/></label><div className="actions"><button type="button" onClick={()=>setModal(false)}>Cancelar</button><button className="primary" type="submit">Crear operación →</button></div></form></section></div>}
  </div>;
 }
-createRoot(document.getElementById('root')).render(<React.StrictMode><App/></React.StrictMode>);
+const mode = new URLSearchParams(location.search);
+const workspaceEnabled = import.meta.env.VITE_NEXUS_WORKSPACE==='1'
+ ? mode.get('demo')!=='1'
+ : import.meta.env.DEV && mode.get('workspace')==='1';
+createRoot(document.getElementById('root')).render(<React.StrictMode>{workspaceEnabled?<Workspace/>:<App/>}</React.StrictMode>);

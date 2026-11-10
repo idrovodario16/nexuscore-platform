@@ -20,6 +20,8 @@ services:
       API_KEY: ${API_KEY:?Set API_KEY}
       ORGANIZATION_ID: ${ORGANIZATION_ID}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
+      WORKSPACE_INSECURE_COOKIE: "1"
+      WORKSPACE_DEMO_PASSWORD: ${WORKSPACE_DEMO_PASSWORD:-}
     ports: ["127.0.0.1:3000:3000"]
     depends_on:
       db: {condition: service_healthy}
@@ -27,6 +29,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      args:
+        VITE_NEXUS_WORKSPACE: "1"
     ports: ["127.0.0.1:8080:80"]
 volumes:
   core_data:

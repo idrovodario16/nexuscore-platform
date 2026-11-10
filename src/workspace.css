@@ -1,0 +1,22 @@
+.nx-workspace { max-width: 1200px; margin: 0 auto; padding: clamp(16px, 4vw, 44px); display: grid; gap: 20px; }
+.nx-workspace h1, .nx-workspace h2, .nx-workspace p { margin: 0; }
+.nx-top, .nx-company, .nx-row-actions, .nx-filters { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.nx-filters, .nx-row-actions { justify-content: flex-start; }
+.nx-workspace .panel { padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.nx-workspace form { display: grid; align-items: end; gap: 14px; }
+.nx-workspace label { display: grid; gap: 6px; }
+.nx-workspace input, .nx-workspace select { background: var(--surface, white); border: 1px solid var(--line, #d4dbe6); color: inherit; border-radius: 8px; padding: 9px 12px; min-width: 0; max-width: 100%; font: inherit; }
+.nx-workspace button:disabled { opacity: .55; cursor: default; }
+.nx-login { width: min(100%, 420px); }
+.nx-create form { grid-template-columns: minmax(0, 2fr) minmax(100px, 1fr) auto; }
+.nx-workspace .nx-error { padding: 12px; border: 1px solid #e3a3a0; border-radius: 8px; background: #fff3f2; color: #882b24; }
+.nx-kpis { margin: 0; }
+.nx-history ol { display: grid; gap: 12px; padding-left: 24px; margin: 0; }
+.nx-history li span { display: block; }
+.nx-sections { display: flex; gap: 8px; flex-wrap: wrap; }
+.nx-business-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.nx-workspace .nx-inline-form { display: grid; align-items: end; grid-template-columns: minmax(0,2fr) minmax(0,1fr) auto; gap: 14px; }
+@media (max-width: 620px) {
+ .nx-create form, .nx-business-grid, .nx-workspace .nx-inline-form { grid-template-columns: 1fr; }
+ .nx-workspace .nx-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

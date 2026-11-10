@@ -1,14 +1,34 @@
 # NexusCore
 
-MVP de gestión operativa multisectorial. Permite registrar operaciones, controlar estados y emitir eventos versionados para análisis externo.
+MVP de gestión operativa multisectorial con una primera implementación comercial para una empresa de repuestos.
 
-**Stack:** React y JavaScript en la demo; TypeScript, Node.js/NestJS y PostgreSQL en la API.
+**Stack:** React y JavaScript en la interfaz, NestJS y TypeScript en la API, y PostgreSQL para la persistencia.
 
-**Estado:** demo autónoma con localStorage y API separada. La interfaz todavía no consume la API. No incluye OIDC/RBAC ni operación SaaS de producción.
+[Demo estática en GitHub Pages](https://idrovodario16.github.io/nexuscore-platform/)
 
-[Demo web](https://idrovodario16.github.io/nexuscore-platform/)
+## NexusWorkspace · operación comercial local
 
-## Qué puedes probar
+Workspace conecta la interfaz con NestJS y PostgreSQL. Permite iniciar sesión, elegir una empresa, registrar envíos, cambiar su estado, consultar el historial y ver indicadores sobre el conjunto filtrado. Operación puede avanzar los envíos. Supervisión y administración también pueden cancelarlos.
+
+El flujo comercial enlaza **Inventario → Clientes → Ventas y cobros → Despachos**. Registra un producto y una entrada de unidades, crea un cliente y confirma una venta. La venta descuenta el stock y genera el despacho en una sola transacción. Puedes registrar un cobro ya recibido y seguir el envío hasta la entrega. Supervisión puede cancelar un despacho de venta pendiente y sin cobro, lo que repone las unidades. Este piloto registra cobros operativos. La factura fiscal, la contabilidad y las devoluciones posteriores al despacho requieren flujos adicionales.
+
+1. Copia `.env.example` a `.env` y define `WORKSPACE_DEMO_PASSWORD` con una contraseña ficticia de al menos 12 caracteres.
+2. Ejecuta `docker compose up -d --build` y espera a que la API esté disponible en `http://localhost:3000/health`.
+3. Ejecuta `docker compose exec api npm run seed:workspace` para preparar las dos empresas de prueba.
+4. Abre [Workspace local](http://localhost:8080) e inicia sesión con la contraseña que definiste.
+
+| Cuenta de prueba | Acceso |
+| --- | --- |
+| `operador@atlas.example` | Atlas Logística |
+| `supervisor@atlas.example` | Atlas Logística y permiso para cancelar |
+| `operador@pacifico.example` | Pacífico Envíos |
+| `admin@nexus.example` | Ambas empresas y permiso para cancelar |
+
+Recorrido sugerido: registra un producto, recibe unidades, crea un cliente y confirma una venta. Registra el cobro en **Ventas y cobros** y pulsa **Ver despacho** para llevarlo de **Pendiente** a **En tránsito** y **Entregado**. Revisa el historial, las existencias y los importes cobrados y pendientes en **Resumen**. Cambia de cuenta para comprobar el aislamiento. En desarrollo con Vite, abre `http://127.0.0.1:5173/?workspace=1` con la API local en el puerto 3000.
+
+El piloto utiliza credenciales de prueba, una cookie de sesión y autorización por empresa en la API. El Compose local habilita HTTP de desarrollo. El tablero consulta Core y la outbox mantiene el contrato v1. Insight, Connect y Portal quedan para fases posteriores. La demo estática de Pages sigue funcionando por separado.
+
+## Qué puedes probar en la demo estática
 
 1. Consulta 24 operaciones ficticias de logística, comercio y servicios.
 2. Crea una operación con título, sector y monto en dólares.
@@ -20,15 +40,14 @@ La barra lateral incluye el enlace al otro producto y una vista que explica la i
 
 ## Demo web frente a backend
 
-| Capacidad | Web pública / React | API local / NestJS + PostgreSQL |
-| --- | --- | --- |
-| Datos | Ficticios; localStorage del navegador | Persistentes en su propia base |
-| Operaciones | Creación y cambios de estado locales | POST/PATCH, control de revisión y outbox transaccional |
-| Acceso | Sin inicio de sesión; demostración pública | Bearer API key y organización autorizada |
-| Integración | Descargar/subir JSON entre demos | Relay HTTP con checkpoint y reintentos |
-| Interfaz conectada a API | **No implementada en este MVP** | API utilizable con HTTP y scripts |
+| Capacidad | Demo pública | Workspace local | API v1 para scripts |
+| --- | --- | --- | --- |
+| Datos | Ficticios en el navegador | Persistentes en PostgreSQL | Persistentes en PostgreSQL |
+| Operaciones | Muestra de logística, comercio y servicios | Inventario, clientes, ventas, cobros y despachos con historial | Alta, listado y cambios de operaciones generales |
+| Acceso | Demostración abierta | Sesión y permisos por empresa | Clave de integración y organización configurada |
+| Integración | Exportación e importación manual de JSON | Tablero conectado a Core | Relay HTTP con checkpoint y reintentos |
 
-**Sites y GitHub Pages sirven aquí solo el frontend.** No ejecuta Node.js, PostgreSQL ni procesos de integración. Las claves nunca se introducen en la demo ni se incluyen en el código del frontend. La demo es una experiencia funcional autónoma; el backend es un servicio separado que debes ejecutar para probar sus rutas reales.
+**GitHub Pages sirve la demo estática con datos ficticios.** Workspace usa la API y PostgreSQL en el entorno local de Docker. Sus operaciones, cuentas de prueba y datos se guardan localmente.
 
 ## Cómo se complementan
 
@@ -74,11 +93,12 @@ En PowerShell, usa `Copy-Item .env.example .env`. Las variables de ejemplo son *
 
 | Servicio | Dirección |
 | --- | --- |
-| Demo estática | http://localhost:8080 |
+| Workspace | http://localhost:8080 |
+| Demo estática | http://localhost:8080/?demo=1 |
 | API / salud | http://localhost:3000/health |
 | PostgreSQL | localhost:5433 |
 
-La migración inicial se aplica antes de arrancar la API. Seed es explícito e idempotente; no necesita el otro proyecto. `docker compose down` detiene los servicios sin borrar los datos. **No uses `down -v` si quieres conservarlos.**
+Las migraciones se aplican antes de arrancar la API. El seed `npm run seed` carga las operaciones de muestra de la API v1. Para preparar las cuentas de Workspace usa `npm run seed:workspace`. `docker compose down` detiene los servicios sin borrar los datos. **No uses `down -v` si quieres conservarlos.**
 
 ### API sin Docker
 
@@ -101,7 +121,7 @@ curl http://localhost:3000/v1/operations \
   -H "X-Organization-ID: $ORGANIZATION_ID"
 ```
 
-En PowerShell usa `curl.exe` y las variables `$env:API_KEY`, `$env:ORGANIZATION_ID`. Consulta el [contrato OpenAPI](docs/openapi.json) para cuerpos y respuestas. La API solo acepta la organización configurada para esta instancia. No hay un proveedor de identidad, gestión de usuarios ni RBAC de producción implementados aún.
+En PowerShell usa `curl.exe` y las variables `$env:API_KEY`, `$env:ORGANIZATION_ID`. Consulta el [contrato OpenAPI de v1](docs/openapi.json) para cuerpos y respuestas. Las rutas v1 usan una clave y la organización configurada para esa instancia. Las rutas de Workspace comprueban la sesión y la membresía en cada solicitud.
 
 ## Arquitectura y archivos
 
