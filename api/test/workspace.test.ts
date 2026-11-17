@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID,scryptSync} from 'node:crypto';
-import {createApp} from '../src/interfaces/http.js';
+import {createRestrictedApp as createApp} from './runtime.js';
 
 test('Workspace: sesión, permisos, aislamiento, revisión, historial e indicadores', {
  skip:process.env.RUN_INTEGRATION!=='1',
@@ -10,7 +10,7 @@ test('Workspace: sesión, permisos, aislamiento, revisión, historial e indicado
  const orgB = randomUUID();
  const previousOrganization = process.env.ORGANIZATION_ID;
  process.env.ORGANIZATION_ID = orgA;
- const {app,pool} = await createApp();
+ const {app,pool,runtimePool} = await createApp();
  const password = 'prueba-ficticia-workspace';
  const salt = randomUUID();
  const hash = salt+':'+scryptSync(password,salt,64).toString('hex');
@@ -133,7 +133,7 @@ test('Workspace: sesión, permisos, aislamiento, revisión, historial e indicado
   await pool.query('DELETE FROM workspace_users WHERE id=ANY($1::uuid[])',[ids]);
   await pool.query('DELETE FROM workspace_organizations WHERE id IN ($1,$2)',[orgA,orgB]);
   await app.close();
-  await pool.end();
+  await pool.end();await runtimePool.end();
   if(previousOrganization===undefined) delete process.env.ORGANIZATION_ID;
   else process.env.ORGANIZATION_ID=previousOrganization;
  }

@@ -24,7 +24,7 @@ export class BusinessRepository {
  constructor(private readonly operations:PostgresOperations){}
 
  async overview(org:string){
-  const {rows:[data]} = await this.operations.pool.query(`WITH recent_sales AS (
+  const {rows:[data]} = await this.operations.query(org,`WITH recent_sales AS (
    SELECT s.id,s.shipment_id,s.total_cents,s.created_at,s.paid_at,s.payment_method,s.cancelled_at,
     c.name AS customer,o.status AS shipment_status,
     (SELECT json_agg(json_build_object('product',p.name,'quantity',i.quantity,'unit_price_cents',i.unit_price_cents)
@@ -57,7 +57,7 @@ export class BusinessRepository {
  }
 
  async product(org:string,input:z.infer<typeof productInput>){
-  const result = await this.operations.pool.query(`INSERT INTO business_products(organization_id,id,sku,name,price_cents)
+  const result = await this.operations.query(org,`INSERT INTO business_products(organization_id,id,sku,name,price_cents)
    VALUES($1,$2,$3,$4,$5) ON CONFLICT(organization_id,sku) DO NOTHING RETURNING id`,
    [org,randomUUID(),input.sku,input.name,input.price_cents]);
   if(!result.rowCount) throw new BusinessConflict('Ya existe un producto con ese código.');
@@ -65,7 +65,7 @@ export class BusinessRepository {
  }
 
  async customer(org:string,input:z.infer<typeof customerInput>){
-  const result = await this.operations.pool.query(`INSERT INTO business_customers(organization_id,id,name,contact)
+  const result = await this.operations.query(org,`INSERT INTO business_customers(organization_id,id,name,contact)
    VALUES($1,$2,$3,$4) RETURNING id`,[org,randomUUID(),input.name,input.contact]);
   return result.rows[0];
  }

@@ -7,3 +7,7 @@ Las rutas v1 para integraciones usan una API key del lado servidor y autorizan u
 Los frontends públicos no contienen claves ni llaman a las APIs. Sus datos se guardan en localStorage del visitante y se pueden restaurar. No deben usarse para datos sensibles. Los imports de la demo admiten como máximo 2 MB y 1000 eventos; la API analítica admite 1000 eventos por lote. En un despliegue real configura también un límite de bytes en el proxy de entrada y límites de solicitudes.
 
 Reporta un problema de forma privada al propietario mediante los medios de contacto de su perfil GitHub, sin incluir secretos en incidencias públicas.
+
+## Aislamiento de base de datos
+
+Consulta [fase 2](docs/phase2-database-isolation.md). Usa un LOGIN dedicado, permisos mínimos y REQUIRE_DATABASE_ISOLATION=1; SUPERUSER/BYPASSRLS omiten las políticas. La API sigue siendo responsable de autorizar el contexto de empresa.

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,randomUUID} from 'node:crypto';
-import {createApp} from '../src/interfaces/http.js';
+import {createRestrictedApp as createApp} from './runtime.js';
 test('HTTP + PostgreSQL: autorización, revisión y outbox atómica', {skip:process.env.RUN_INTEGRATION!=='1'}, async()=>{
- const {app,pool}=await createApp();
+ const {app,pool,runtimePool}=await createApp();
  try {
   await app.listen(0,'127.0.0.1');
   const base=await app.getUrl();
@@ -21,7 +21,7 @@ test('HTTP + PostgreSQL: autorización, revisión y outbox atómica', {skip:proc
   assert.equal(events.rowCount,2);assert.equal(events.rows[1].event.data.revision,2);
   await pool.query("DELETE FROM outbox WHERE event->'data'->>'id'=$1",[row.id]);
   await pool.query('DELETE FROM operations WHERE id=$1',[row.id]);
- } finally {await app.close();await pool.end();}
+ } finally {await app.close();await pool.end();await runtimePool.end();}
 });
 
 test('HTTP + PostgreSQL: two scoped organizations cannot read or mutate each other', {skip:process.env.RUN_INTEGRATION!=='1'}, async()=>{
@@ -33,7 +33,7 @@ test('HTTP + PostgreSQL: two scoped organizations cannot read or mutate each oth
  try {instance=await createApp();} finally {
   if(previous===undefined)delete process.env.INTEGRATION_CREDENTIALS;else process.env.INTEGRATION_CREDENTIALS=previous;
  }
- const {app,pool}=instance;
+ const {app,pool,runtimePool}=instance;
  const headers=(key:string,org:string)=>({'Content-Type':'application/json',Authorization:'Bearer '+key,'X-Organization-ID':org});
  try {
   await app.listen(0,'127.0.0.1');const base=await app.getUrl();
@@ -50,6 +50,6 @@ test('HTTP + PostgreSQL: two scoped organizations cannot read or mutate each oth
  } finally {
   await pool.query('DELETE FROM outbox WHERE organization_id IN ($1,$2)',[orgA,orgB]);
   await pool.query('DELETE FROM operations WHERE organization_id IN ($1,$2)',[orgA,orgB]);
-  await app.close();await pool.end();
+  await app.close();await pool.end();await runtimePool.end();
  }
 });

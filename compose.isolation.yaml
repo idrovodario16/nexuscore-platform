@@ -1,0 +1,7 @@
+# Apply migrations separately with the owner account before starting this mode.
+services:
+  api:
+    environment:
+      DATABASE_URL: ${RUNTIME_DATABASE_URL:?Set a dedicated restricted login URL}
+      REQUIRE_DATABASE_ISOLATION: "1"
+    command: ["node", "dist/src/main.js"]

@@ -148,7 +148,7 @@ export class WorkspaceController {
  async overview(@Headers('cookie') cookies:string,@Param('organization') organization:string,@Query() query:unknown){
   const {org} = await this.membership(cookies,organization);
   const {search,status,offset} = parse(filters,query);
-  const result = await this.pool.query(`WITH filtered AS (
+  const result = await this.operations.query(org,`WITH filtered AS (
     SELECT o.* FROM operations o JOIN workspace_history h
      ON h.organization_id=o.organization_id AND h.operation_id=o.id AND h.revision=1
     WHERE o.organization_id=$1 AND ($2::text IS NULL OR o.status=$2)
@@ -193,7 +193,7 @@ export class WorkspaceController {
  @Get('organizations/:organization/shipments/:id/history')
  async history(@Headers('cookie') cookies:string,@Param('organization') organization:string,@Param('id') id:string){
   const {org} = await this.membership(cookies,organization);
-  const result = await this.pool.query(`SELECT revision,actor_name,previous_status,status,occurred_at FROM workspace_history
+  const result = await this.operations.query(org,`SELECT revision,actor_name,previous_status,status,occurred_at FROM workspace_history
    WHERE organization_id=$1 AND operation_id=$2 ORDER BY revision`,[org,parse(uuid,id)]);
   if(!result.rowCount) throw new HttpException('Envío no encontrado.',404);
   return result.rows;

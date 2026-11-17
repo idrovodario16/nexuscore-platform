@@ -22,3 +22,7 @@ El desglose C4 y las decisiones compartidas están en [nexus-architecture](https
 ## Actualización: acceso de integración multiempresa
 
 La limitación de una sola credencial por instancia descrita arriba corresponde al modo anterior. Ahora un módulo de autorización valida un registro de credenciales por empresa y permisos al inicio, antes de atender v1. Consulta [fase 1](phase1-tenant-access.md). Workspace conserva su propia autorización por sesión y membresía.
+
+## Fase 2
+
+Las tablas de datos empresariales incorporan RLS y contexto local a la transacción; el adaptador establece el contexto después de la autorización. Migraciones y ejecución usan cuentas distintas. Ver [alcance y despliegue](phase2-database-isolation.md). Esto amplía el aislamiento de aplicación de la fase 1 sin cambiar contratos ni compartir bases.
