@@ -5,6 +5,36 @@ import {Pool} from 'pg';
 import {PostgresOperations} from '../src/infrastructure/postgres.js';
 import {verifyDatabaseIsolation,tenantTables} from '../src/infrastructure/database-security.js';
 
+test('Tenant writes share one lock across UUID casing and release it on commit/rollback', {skip:process.env.RUN_INTEGRATION!=='1'},async()=>{
+ const pool=new Pool({connectionString:process.env.DATABASE_URL,options:'-c role=nexus_core_runtime',max:1});
+ const probe=new Pool({connectionString:process.env.DATABASE_URL,options:'-c role=nexus_core_runtime',max:1});
+ const repo=new PostgresOperations(pool);
+ const org='abcdefab-cdef-4abc-8def-abcdefabcdef';
+ const other='fedcbafe-dcba-4fed-8cba-fedcbafedcba';
+ const available=async(id:string)=>{
+  // A standalone query releases its transaction lock before returning the connection.
+  const result=await probe.query('SELECT pg_try_advisory_xact_lock(hashtext($1)) AS available',[id]);
+  return result.rows[0].available;
+ };
+ const check=async()=>{
+  assert.equal(await available(org),false,'lowercase company lock must already be held');
+  assert.equal(await available(other),true,'a different company remains independent');
+ };
+ try {
+  for(const spelling of [org,org.toUpperCase()]){
+   await repo.transaction(spelling,check);
+   assert.equal(await available(org),true,'commit releases the company lock');
+   await assert.rejects(()=>repo.transaction(spelling,async()=>{
+    await check();
+    throw Error('intentional rollback');
+   }),/intentional rollback/);
+   assert.equal(await available(org),true,'rollback releases the company lock');
+  }
+ } finally {
+  await pool.end();await probe.end();
+ }
+});
+
 test('RLS: unfiltered SQL, denied writes and transaction context cleanup', {skip:process.env.RUN_INTEGRATION!=='1'},async()=>{
  const admin=new Pool({connectionString:process.env.DATABASE_URL});
  const pool=new Pool({connectionString:process.env.DATABASE_URL,options:'-c role=nexus_core_runtime',max:1});
