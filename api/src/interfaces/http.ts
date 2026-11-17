@@ -1,11 +1,14 @@
 import 'reflect-metadata';
 import {Body,CanActivate,Controller,ExecutionContext,Get,Headers,HttpException,Inject,Module,Param,Patch,Post,Query,UseGuards} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
-import {Pool} from 'pg';import {timingSafeEqual} from 'node:crypto';import {z,ZodError} from 'zod';
+import {Pool} from 'pg';import {z,ZodError} from 'zod';
 import {OperationsService,RevisionConflict} from '../application/operations.js';
 import {TransitionError} from '../domain/operation.js';import {PostgresOperations} from '../infrastructure/postgres.js';
 import {WorkspaceController} from './workspace.js';
-class AuthGuard implements CanActivate {canActivate(ctx:ExecutionContext){const req=ctx.switchToHttp().getRequest();const expected=process.env.API_KEY!;const actual=String(req.headers.authorization||'').replace(/^Bearer /,'');if(Buffer.byteLength(actual)!==Buffer.byteLength(expected)||!timingSafeEqual(Buffer.from(actual),Buffer.from(expected)))throw new HttpException('Credencial inválida',401);if(req.headers['x-organization-id']!==process.env.ORGANIZATION_ID)throw new HttpException('Organización no autorizada',403);return true;}}
+import {IntegrationAccess,AccessDenied} from '../application/integration-access.js';
+class AuthGuard implements CanActivate {
+ constructor(@Inject(IntegrationAccess) private readonly access:IntegrationAccess){}
+ canActivate(ctx:ExecutionContext){const req=ctx.switchToHttp().getRequest();try {this.access.authorize(req.headers.authorization,req.headers['x-organization-id'],['GET','HEAD'].includes(req.method)?'read':'write');} catch(e){if(e instanceof AccessDenied)throw new HttpException(e.message,e.status);throw e;}return true;}}
 function integer(value:string|undefined){const n=Number(value??0);if(!Number.isSafeInteger(n)||n<0)throw new HttpException('Cursor u offset inválido',400);return n;}
 async function handle<T>(work:()=>Promise<T>){try{return await work();}catch(e){if(e instanceof ZodError)throw new HttpException({message:'Entrada inválida',issues:e.issues},400);if(e instanceof TransitionError)throw new HttpException(e.message,409);if(e instanceof RevisionConflict)throw new HttpException(e.message,409);throw e;}}
 @Controller('v1') @UseGuards(AuthGuard)
@@ -18,12 +21,12 @@ class OperationsController {
 }
 @Controller() class HealthController {@Get('health') health(){return {status:'ok',service:'nexuscore',version:'0.1.0'};}}
 export async function createApp(){
- if(!process.env.API_KEY||process.env.API_KEY.length<32)throw Error('API_KEY debe contener al menos 32 caracteres');
- z.string().uuid().parse(process.env.ORGANIZATION_ID);if(!process.env.DATABASE_URL)throw Error('DATABASE_URL requerida');
+ const access=new IntegrationAccess(process.env);
+ if(!process.env.DATABASE_URL)throw Error('DATABASE_URL requerida');
  const pool=new Pool({connectionString:process.env.DATABASE_URL});await pool.query('SELECT 1');
  const operations = new PostgresOperations(pool);
  @Module({controllers:[HealthController,OperationsController,WorkspaceController],providers:[
-  AuthGuard,{provide:Pool,useValue:pool},{provide:PostgresOperations,useValue:operations},
+  AuthGuard,{provide:IntegrationAccess,useValue:access},{provide:Pool,useValue:pool},{provide:PostgresOperations,useValue:operations},
   {provide:OperationsService,useValue:new OperationsService(operations)}
  ]}) class AppModule{}
  const app=await NestFactory.create(AppModule,{logger:process.env.NODE_ENV==='test'?false:['error','warn','log'],bodyParser:true});

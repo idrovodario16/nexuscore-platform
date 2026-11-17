@@ -1,0 +1,5 @@
+# Supply the registry through the server environment, never the frontend.
+services:
+  api:
+    environment:
+      INTEGRATION_CREDENTIALS: ${INTEGRATION_CREDENTIALS:?Set a non-empty JSON credential registry}

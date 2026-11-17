@@ -18,3 +18,7 @@ Los índices compuestos empiezan por organization_id. La credencial de esta inst
 Integración eventual y entrega al menos una vez. El relay confirma checkpoint solo al terminar la ingestión. El evento es un snapshot completo: se puede reconstruir facts desde outbox. Borrados, cambios de moneda, conflictos de mismo ID/revisión con datos distintos y cambio de organización quedan fuera del contrato v1. Solo el productor dueño del registro puede emitir revisiones válidas. Se conservan inbox/outbox sin política automática de limpieza; la retención debe definirse antes de operar a escala.
 
 El desglose C4 y las decisiones compartidas están en [nexus-architecture](https://github.com/idrovodario16/nexus-architecture).
+
+## Actualización: acceso de integración multiempresa
+
+La limitación de una sola credencial por instancia descrita arriba corresponde al modo anterior. Ahora un módulo de autorización valida un registro de credenciales por empresa y permisos al inicio, antes de atender v1. Consulta [fase 1](phase1-tenant-access.md). Workspace conserva su propia autorización por sesión y membresía.
