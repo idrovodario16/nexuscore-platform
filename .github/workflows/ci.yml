@@ -39,6 +39,8 @@ jobs:
         working-directory: api
       - run: npm run migrate
         working-directory: api
+      - name: Provision restricted runtime role
+        run: psql "${DATABASE_URL/postgresql+psycopg/postgresql}" -v ON_ERROR_STOP=1 -f api/scripts/runtime-role.sql
       - run: npm test
         working-directory: api
       - run: docker build -f api/Dockerfile -t nexus-api-ci .

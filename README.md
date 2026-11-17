@@ -177,3 +177,7 @@ Consulta [Nexus Architecture](https://github.com/idrovodario16/nexus-architectur
 ## Fase 1 · acceso multiempresa de integración
 
 La API v1 admite credenciales por empresa con permisos explícitos read/write y conserva el modo anterior de una empresa. Ver [configuración, revisión de arquitectura, migración y límites](docs/phase1-tenant-access.md). Core e Insight siguen siendo productos independientes; esta fase no incorpora identidad SaaS de producción.
+
+## Fase 2 · aislamiento en PostgreSQL
+
+Las tablas empresariales incorporan RLS y contexto de empresa por transacción. El modo REQUIRE_DATABASE_ISOLATION=1 exige una cuenta restringida y migraciones aplicadas. Consulta [despliegue, alcance y pruebas](docs/phase2-database-isolation.md); la cuenta administradora del Compose de desarrollo no aplica esta barrera.

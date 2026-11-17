@@ -5,6 +5,7 @@ import {Pool} from 'pg';import {z,ZodError} from 'zod';
 import {OperationsService,RevisionConflict} from '../application/operations.js';
 import {TransitionError} from '../domain/operation.js';import {PostgresOperations} from '../infrastructure/postgres.js';
 import {WorkspaceController} from './workspace.js';
+import {verifyDatabaseIsolation} from '../infrastructure/database-security.js';
 import {IntegrationAccess,AccessDenied} from '../application/integration-access.js';
 class AuthGuard implements CanActivate {
  constructor(@Inject(IntegrationAccess) private readonly access:IntegrationAccess){}
@@ -23,7 +24,11 @@ class OperationsController {
 export async function createApp(){
  const access=new IntegrationAccess(process.env);
  if(!process.env.DATABASE_URL)throw Error('DATABASE_URL requerida');
- const pool=new Pool({connectionString:process.env.DATABASE_URL});await pool.query('SELECT 1');
+ const pool=new Pool({connectionString:process.env.DATABASE_URL});
+ try {
+  await pool.query('SELECT 1');
+  if(process.env.REQUIRE_DATABASE_ISOLATION==='1')await verifyDatabaseIsolation(pool);
+ } catch(error){await pool.end();throw error;}
  const operations = new PostgresOperations(pool);
  @Module({controllers:[HealthController,OperationsController,WorkspaceController],providers:[
   AuthGuard,{provide:IntegrationAccess,useValue:access},{provide:Pool,useValue:pool},{provide:PostgresOperations,useValue:operations},

@@ -1,4 +1,4 @@
-import {Pool,type PoolClient} from 'pg';
+import {Pool,type PoolClient,type QueryResultRow} from 'pg';
 import {randomUUID} from 'node:crypto';
 import {assertTransition,eventFor,type Operation} from '../domain/operation.js';
 import {RevisionConflict,type OperationsRepository} from '../application/operations.js';
@@ -7,12 +7,15 @@ export class BusinessConflict extends Error {}
 function normalize(row:any):Operation{return {...row,created_at:row.created_at.toISOString(),updated_at:row.updated_at.toISOString()};}
 export class PostgresOperations implements OperationsRepository {
  constructor(readonly pool:Pool){}
- async list(org:string,offset:number){const r=await this.pool.query('SELECT * FROM operations WHERE organization_id=$1 ORDER BY created_at DESC,id LIMIT 100 OFFSET $2',[org,offset]);return r.rows.map(normalize);}
- async transaction<T>(org:string,run:(client:PoolClient)=>Promise<T>):Promise<T>{
+ async list(org:string,offset:number){const r=await this.query(org,'SELECT * FROM operations WHERE organization_id=$1 ORDER BY created_at DESC,id LIMIT 100 OFFSET $2',[org,offset]);return r.rows.map(normalize);}
+ async query<T extends QueryResultRow=any>(org:string,sql:string,values:unknown[]=[]){
+  return this.withTenant(org,client=>client.query<T>(sql,values));
+ }
+ async withTenant<T>(org:string,run:(client:PoolClient)=>Promise<T>):Promise<T>{
   const client = await this.pool.connect();
   try {
    await client.query('BEGIN');
-   await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[org]);
+   await client.query("SELECT set_config('nexus.organization_id',$1,true)",[org]);
    const result = await run(client);
    await client.query('COMMIT');
    return result;
@@ -22,6 +25,12 @@ export class PostgresOperations implements OperationsRepository {
   } finally {
    client.release();
   }
+ }
+ async transaction<T>(org:string,run:(client:PoolClient)=>Promise<T>):Promise<T>{
+  return this.withTenant(org,async client=>{
+   await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[org]);
+   return run(client);
+  });
  }
  private async append(client:PoolClient,row:Operation){const event=eventFor(row,randomUUID());await client.query('INSERT INTO outbox(organization_id,event) VALUES($1,$2)',[row.organization_id,event]);}
  private async audit(client:PoolClient,row:Operation,actor:OperationActor,previous:Operation['status']|null){
@@ -80,5 +89,5 @@ export class PostgresOperations implements OperationsRepository {
    return row;
   });
  }
- async events(org:string,after:number){const r=await this.pool.query('SELECT sequence::text,event FROM outbox WHERE organization_id=$1 AND sequence>$2 ORDER BY sequence LIMIT 100',[org,after]);return r.rows;}
+ async events(org:string,after:number){const r=await this.query(org,'SELECT sequence::text,event FROM outbox WHERE organization_id=$1 AND sequence>$2 ORDER BY sequence LIMIT 100',[org,after]);return r.rows;}
 }
