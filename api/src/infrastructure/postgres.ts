@@ -28,7 +28,8 @@ export class PostgresOperations implements OperationsRepository {
  }
  async transaction<T>(org:string,run:(client:PoolClient)=>Promise<T>):Promise<T>{
   return this.withTenant(org,async client=>{
-   await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[org]);
+   // PostgreSQL UUID equality ignores case; the lock must use the same identity.
+   await client.query('SELECT pg_advisory_xact_lock(hashtext($1::uuid::text))',[org]);
    return run(client);
   });
  }
