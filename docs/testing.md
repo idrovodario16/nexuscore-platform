@@ -1,6 +1,6 @@
 # Estrategia de pruebas
 
-1. Modelo de demo: muestras válidas, rechazo atómico de eventos inválidos, reenvíos y revisiones fuera de orden, reglas de estados e indicadores sobre conjunto vacío.
+1. Modelo de demo: muestras válidas, rechazo atómico de eventos inválidos, reenvíos y revisiones fuera de orden, reglas de estados e indicadores sobre conjunto vacío. `tests/import-identity.test.mjs` verifica UUID en mayúsculas/minúsculas, coincidencia de empresa en sobre/datos, reconciliación de registros existentes conservando la revisión mayor, métricas sin duplicados, empresas distintas y entradas originales sin modificar. Las nuevas regresiones fallaron antes de la corrección.
 2. Dominio API: validación y fórmulas sin requerir red.
 3. HTTP: credenciales ausentes → 401; organización distinta → 403; entrada inválida → 400/422.
 4. PostgreSQL: creación/cambio de estado, conflicto de revisión y conteo exacto de outbox sin evento por actualización fallida.
