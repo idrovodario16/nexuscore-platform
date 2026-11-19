@@ -17,7 +17,7 @@ export const receiptInput = z.object({
 export const saleInput = z.object({
  id:z.string().uuid(),customer_id:z.string().uuid(),
  items:z.array(z.object({product_id:z.string().uuid(),quantity}).strict()).min(1).max(25),
-}).strict().refine(sale=>new Set(sale.items.map(item=>item.product_id)).size===sale.items.length);
+}).strict().refine(sale=>new Set(sale.items.map(item=>item.product_id.toLowerCase())).size===sale.items.length);
 export const paymentInput = z.object({method:z.enum(['cash','transfer','card'])}).strict();
 
 export class BusinessRepository {

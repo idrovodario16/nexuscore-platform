@@ -95,6 +95,22 @@ test('Workspace: sesión, permisos, aislamiento, revisión, historial e indicado
   const product = await createdId('products',{sku:'CAD-36',name:'Cadena de prueba',price_cents:1250});
   const customer = await createdId('customers',{name:'Cliente de prueba',contact:''});
   assert.equal((await post('receipts',{product_id:product,quantity:6,reference:'Ingreso ficticio'})).status,201);
+  const commercialState=async()=> (await pool.query(`SELECT
+   (SELECT stock FROM business_products WHERE organization_id=$1 AND id=$2) AS stock,
+   (SELECT count(*) FROM business_sales WHERE organization_id=$1) AS sales,
+   (SELECT count(*) FROM business_sale_items WHERE organization_id=$1) AS items,
+   (SELECT count(*) FROM business_stock_movements WHERE organization_id=$1) AS movements,
+   (SELECT count(*) FROM operations WHERE organization_id=$1) AS operations,
+   (SELECT count(*) FROM outbox WHERE organization_id=$1) AS events,
+   (SELECT count(*) FROM workspace_history WHERE organization_id=$1) AS history`,[orgA,product])).rows[0];
+  const beforeDuplicate=await commercialState();
+  for(const ids of [[product,product],[product,product.toUpperCase()],[product.toUpperCase(),product]]){
+   const rejected=await post('sales',{
+    id:randomUUID(),customer_id:customer,items:ids.map(product_id=>({product_id,quantity:1})),
+   });
+   assert.equal(rejected.status,400,await rejected.text());
+   assert.deepEqual(await commercialState(),beforeDuplicate,'invalid sale must not change stock, sales, shipments, history or events');
+  }
   const attempts = [randomUUID(),randomUUID()].map(id=>({
    id,customer_id:customer,items:[{product_id:product,quantity:4}],
   }));
