@@ -1,5 +1,11 @@
 # Cambios
 
+## 2026-11-19 · Productos repetidos en ventas
+
+- Las ventas comparan los UUID de producto sin distinguir mayúsculas/minúsculas. Un producto repetido se rechaza con HTTP 400 antes de iniciar escrituras, evitando llegar a un conflicto de clave en la base.
+- Pruebas de validación y regresión HTTP con rol restringido: no cambian stock, ventas, líneas, movimientos, operaciones, historial ni eventos ante una solicitud inválida.
+- La alerta GHSA-fc5q-39xc-vjpf fue retirada del registro el 18 de noviembre; npm audit web devuelve cero alertas en la revisión del día 19. No se actualizaron dependencias por este aviso.
+
 ## 2026-11-19 · Revalidación de dependencias
 
 - GitHub retiró el aviso GHSA-fc5q-39xc-vjpf el 18/11: https://github.com/advisories/GHSA-fc5q-39xc-vjpf.
