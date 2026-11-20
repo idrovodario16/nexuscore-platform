@@ -6,6 +6,17 @@
 - Pruebas de validación y regresión HTTP con rol restringido: no cambian stock, ventas, líneas, movimientos, operaciones, historial ni eventos ante una solicitud inválida.
 - La alerta GHSA-fc5q-39xc-vjpf fue retirada del registro el 18 de noviembre; npm audit web devuelve cero alertas en la revisión del día 19. No se actualizaron dependencias por este aviso.
 
+## 2026-11-19 · Revalidación de dependencias
+
+- GitHub retiró el aviso GHSA-fc5q-39xc-vjpf el 18/11: https://github.com/advisories/GHSA-fc5q-39xc-vjpf.
+- npm audit web devuelve cero alertas en ambos productos en la revisión del 19/11. No se cambiaron paquetes ni locks por este aviso. El resultado no certifica la seguridad general del sistema.
+
+## 2026-11-18 · Identidad de operaciones importadas
+
+- La importación JSON normaliza los UUID antes de comparar empresas y fusionar revisiones. El mismo identificador en mayúsculas/minúsculas ya no duplica operaciones ni indicadores.
+- En cada importación se reconcilian también las filas existentes, conservando la revisión mayor y sin modificar los datos de entrada. Un lote inválido sigue rechazándose completo.
+- Regresiones reproducidas antes de corregir y hoja de ruta actualizada. Pendiente: alerta de seguridad en dependencias de desarrollo detectada por npm audit.
+
 ## 2026-11-17 · Bloqueo de escrituras por empresa
 
 - La clave del bloqueo transaccional se calcula sobre el UUID canónico de PostgreSQL. URLs de Workspace con el UUID en mayúsculas ya no pueden eludir la serialización de ventas, cobros y cancelaciones de la misma empresa.

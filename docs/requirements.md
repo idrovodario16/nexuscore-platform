@@ -22,7 +22,7 @@ Revisión: 2026-11-19. El estado distingue implementaciones parciales y propuest
 
 | Prioridad | Historia | Estado observado | Terminado cuando… |
 | --- | --- | --- | --- |
-| P0 | Escrituras serializadas por empresa | Incorporado en PR #3; CI aprobada | CI con PostgreSQL y rol restringido aprueba exclusión entre mayúsculas/minúsculas, independencia de otra empresa y liberación en commit/rollback |
+| P0 | Escrituras serializadas por empresa | Incorporado en [PR #3](https://github.com/idrovodario16/nexuscore-platform/pull/3), CI aprobada | CI con PostgreSQL y rol restringido aprueba exclusión entre mayúsculas/minúsculas, independencia de otra empresa y liberación en commit/rollback |
 | P0 | Validación de productos repetidos en ventas | Corrección propuesta: comparar UUID sin distinguir capitalización | Pruebas unitarias rechazan duplicados en ambos órdenes y aceptan productos distintos; HTTP devuelve 400 sin cambiar stock, ventas, líneas, movimientos, operaciones, historial ni outbox |
 | P0 | Identidad de operaciones importadas | Pendiente de revisión: Core PR #4 e Insight PR #3 | UUID equivalentes no duplican filas ni métricas, se conserva la revisión mayor y empresas distintas siguen separadas; pruebas y build aprobados |
 | P0 | Dependencias de desarrollo | Aviso GHSA-fc5q-39xc-vjpf retirado el 18/11; npm audit web sin alertas el 19/11, sin cambiar paquetes | Revalidar avisos vigentes y compatibilidad antes de actualizar; conservar locks reproducibles y pruebas/build aprobados |
