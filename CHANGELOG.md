@@ -1,5 +1,11 @@
 # Cambios
 
+## 2026-11-21 · Fechas con desplazamiento horario en la importación web
+
+- Las demos admiten fechas UTC y offsets ISO 8601 en los tres campos temporales, conforme al contrato v1. Se conserva el texto original y la revisión más reciente.
+- Pruebas de aceptación de offsets positivos/negativos, rechazo atómico de fechas inválidas y exportación/reimportación sin duplicados.
+- Hoja de ruta revisada: los PRs anteriores ya están incorporados en main; siguen pendientes los requisitos funcionales y de operación documentados.
+
 ## 2026-11-19 · Productos repetidos en ventas
 
 - Las ventas comparan los UUID de producto sin distinguir mayúsculas/minúsculas. Un producto repetido se rechaza con HTTP 400 antes de iniciar escrituras, evitando llegar a un conflicto de clave en la base.
