@@ -4,8 +4,8 @@ export const sectors={logistics:'Logística',retail:'Comercio',services:'Servici
 export const statuses={pending:'Pendiente',in_progress:'En curso',completed:'Completada',cancelled:'Cancelada'};
 export const transitions={pending:['in_progress','cancelled'],in_progress:['completed','cancelled'],completed:[],cancelled:[]};
 const uuidSchema=z.string().uuid().transform(value=>value.toLowerCase());
-export const operationSchema=z.object({id:uuidSchema,organization_id:uuidSchema,title:z.string().trim().min(3).max(120),sector:z.enum(['logistics','retail','services']),status:z.enum(['pending','in_progress','completed','cancelled']),amount_cents:z.number().int().min(0).max(1000000000),revision:z.number().int().positive(),created_at:z.string().datetime(),updated_at:z.string().datetime()}).strict();
-export const eventSchema=z.object({event_id:uuidSchema,type:z.literal('operation.upserted.v1'),schema_version:z.literal(1),source:z.literal('nexuscore'),organization_id:uuidSchema,occurred_at:z.string().datetime(),data:operationSchema}).strict().refine(e=>e.organization_id===e.data.organization_id,{message:'La organización del evento no coincide'});
+export const operationSchema=z.object({id:uuidSchema,organization_id:uuidSchema,title:z.string().trim().min(3).max(120),sector:z.enum(['logistics','retail','services']),status:z.enum(['pending','in_progress','completed','cancelled']),amount_cents:z.number().int().min(0).max(1000000000),revision:z.number().int().positive(),created_at:z.string().datetime({offset:true}),updated_at:z.string().datetime({offset:true})}).strict();
+export const eventSchema=z.object({event_id:uuidSchema,type:z.literal('operation.upserted.v1'),schema_version:z.literal(1),source:z.literal('nexuscore'),organization_id:uuidSchema,occurred_at:z.string().datetime({offset:true}),data:operationSchema}).strict().refine(e=>e.organization_id===e.data.organization_id,{message:'La organización del evento no coincide'});
 export const batchSchema=z.array(eventSchema).max(1000);
 export function mergeEvents(current,raw){
  const events=batchSchema.parse(raw);

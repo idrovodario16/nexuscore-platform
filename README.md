@@ -146,6 +146,7 @@ Ambos incluyen `contracts/`, `examples/`, `docs/`, Dockerfiles y CI. Se empieza 
 - Estados terminales: `completed` y `cancelled`. No se pueden reabrir en Core.
 - Revisionado: inicia en 1; cada cambio de estado aumenta la revisión en la misma transacción que su evento.
 - Importación JSON: los UUID se normalizan a minúsculas antes de comparar empresas y operaciones. Un reenvío que cambia solo la capitalización conserva una única fila y la revisión mayor. En la siguiente importación también se reconcilian duplicados equivalentes existentes en el navegador, sin modificar los datos originales; los lotes inválidos se rechazan completos.
+- Fechas en la importación web: se admite UTC (`Z`) y desplazamientos como `-05:00` o `+05:30` en `occurred_at`, `created_at` y `updated_at`. Se conserva el texto de la fecha; las entradas sin zona horaria, numéricas o inválidas se rechazan como lote completo.
 - El esquema usa UUID, fechas ISO 8601 con zona horaria y contrato versionado. No hay borrado físico de operaciones en la API.
 
 ## Pruebas y CI

@@ -18,13 +18,14 @@ Validación de entradas; secretos fuera del frontend; queries parametrizadas; l�
 
 ## Hoja de ruta verificable
 
-Revisión: 2026-11-19. El estado distingue implementaciones parciales y propuestas sin fusionar. Una prueba omitida no satisface el criterio correspondiente; no se considera completo el sistema mientras haya requisitos pendientes o validaciones fallidas.
+Revisión: 2026-11-21. El estado distingue implementaciones parciales y propuestas sin fusionar. Una prueba omitida no satisface el criterio correspondiente; no se considera completo el sistema mientras haya requisitos pendientes o validaciones fallidas.
 
 | Prioridad | Historia | Estado observado | Terminado cuando… |
 | --- | --- | --- | --- |
+| P0 | Fechas con zona horaria en demos | Corrección propuesta en ambos productos | UTC y offsets positivos/negativos se importan en los tres campos sin cambiar el texto; exportar/reimportar conserva revisión y unicidad; fechas sin zona o inválidas se rechazan sin modificar el estado; pruebas y build aprobados |
 | P0 | Escrituras serializadas por empresa | Incorporado en [PR #3](https://github.com/idrovodario16/nexuscore-platform/pull/3), CI aprobada | CI con PostgreSQL y rol restringido aprueba exclusión entre mayúsculas/minúsculas, independencia de otra empresa y liberación en commit/rollback |
-| P0 | Validación de productos repetidos en ventas | Corrección propuesta: comparar UUID sin distinguir capitalización | Pruebas unitarias rechazan duplicados en ambos órdenes y aceptan productos distintos; HTTP devuelve 400 sin cambiar stock, ventas, líneas, movimientos, operaciones, historial ni outbox |
-| P0 | Identidad de operaciones importadas | Pendiente de revisión: Core PR #4 e Insight PR #3 | UUID equivalentes no duplican filas ni métricas, se conserva la revisión mayor y empresas distintas siguen separadas; pruebas y build aprobados |
+| P0 | Validación de productos repetidos en ventas | Incorporado en PR #5; CI aprobada | Pruebas unitarias rechazan duplicados en ambos órdenes y aceptan productos distintos; HTTP devuelve 400 sin cambiar stock, ventas, líneas, movimientos, operaciones, historial ni outbox |
+| P0 | Identidad de operaciones importadas | Incorporado en Core PR #4 e Insight PR #3; CI aprobada | UUID equivalentes no duplican filas ni métricas, se conserva la revisión mayor y empresas distintas siguen separadas; pruebas y build aprobados |
 | P0 | Dependencias de desarrollo | Aviso GHSA-fc5q-39xc-vjpf retirado el 18/11; npm audit web sin alertas el 19/11, sin cambiar paquetes | Revalidar avisos vigentes y compatibilidad antes de actualizar; conservar locks reproducibles y pruebas/build aprobados |
 | P0 | Administración de empresas y usuarios | Sesiones, membresías y roles de Workspace implementados; administración pendiente | Administrador crea/desactiva usuarios y empresas, asigna/revoca membresías; pruebas impiden acceso cruzado y verifican revocación de sesiones |
 | P0 | Identidad OIDC y RBAC | Pendiente; credenciales locales y de integración disponibles | Operador/analista/admin autorizados por claims y tenant; pruebas de expiración y revocación aprobadas |
