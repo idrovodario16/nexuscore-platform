@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {Body,CanActivate,Controller,ExecutionContext,Get,Headers,HttpException,Inject,Module,Param,Patch,Post,Query,UseGuards} from '@nestjs/common';
+import {Body,CanActivate,Controller,ExecutionContext,Get,Headers,HttpException,Inject,Module,Param,Patch,Post,Query,Res,UseGuards} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import {Pool} from 'pg';import {z,ZodError} from 'zod';
 import {OperationsService,RevisionConflict} from '../application/operations.js';
@@ -20,7 +20,19 @@ class OperationsController {
  @Patch('operations/:id') update(@Headers('x-organization-id') org:string,@Param('id') id:string,@Body() input:unknown){if(!z.string().uuid().safeParse(id).success)throw new HttpException('UUID inválido',400);return handle(async()=>{const row=await this.service.update(org,id,input);if(!row)throw new HttpException('Operación no encontrada',404);return row;});}
  @Get('events') async events(@Headers('x-organization-id') org:string,@Query('after') after?:string){const cursor=integer(after);const items=await this.service.events(org,cursor);return {items:items.map(r=>r.event),next_cursor:items.length?String(items[items.length-1].sequence):String(cursor)};}
 }
-@Controller() class HealthController {@Get('health') health(){return {status:'ok',service:'nexuscore',version:'0.1.0'};}}
+@Controller()
+export class HealthController {
+ constructor(@Inject(Pool) private readonly pool:Pool){}
+ @Get('health')
+ health(){return {status:'ok',service:'nexuscore',version:'0.1.0'};}
+ @Get('ready')
+ async ready(@Res({passthrough:true}) response:{setHeader(name:string,value:string):unknown}){
+  response.setHeader('Cache-Control','no-store');
+  try {await this.pool.query('SELECT 1');}
+  catch {throw new HttpException('Database unavailable',503);}
+  return {status:'ready',service:'nexuscore',version:'0.1.0'};
+ }
+}
 export async function createApp(){
  const access=new IntegrationAccess(process.env);
  if(!process.env.DATABASE_URL)throw Error('DATABASE_URL requerida');

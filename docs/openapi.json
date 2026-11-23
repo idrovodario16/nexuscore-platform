@@ -447,6 +447,81 @@
           }
         }
       }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Current PostgreSQL connectivity",
+        "description": "Public connectivity probe using SELECT 1 on the runtime pool. Does not validate migrations, business data or relay delivery.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Database query succeeded",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents caching of the current availability result",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "service",
+                    "version"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "ready"
+                    },
+                    "service": {
+                      "const": "nexuscore"
+                    },
+                    "version": {
+                      "const": "0.1.0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unavailable; internal error details are not returned",
+            "headers": {
+              "Cache-Control": {
+                "description": "Prevents caching of the current availability result",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "message"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "const": 503
+                    },
+                    "message": {
+                      "const": "Database unavailable"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
