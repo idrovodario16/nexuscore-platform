@@ -53,3 +53,27 @@ test('HTTP + PostgreSQL: two scoped organizations cannot read or mutate each oth
   await app.close();await pool.end();await runtimePool.end();
  }
 });
+
+test('HTTP readiness is public, reports database failure and keeps health live', {skip:process.env.RUN_INTEGRATION!=='1'}, async()=>{
+ const {app,pool,runtimePool}=await createApp();
+ let runtimeClosed=false;
+ try {
+  await app.listen(0,'127.0.0.1');const base=await app.getUrl();
+  const ready=await fetch(base+'/ready');
+  assert.equal(ready.status,200);
+  assert.equal(ready.headers.get('cache-control'),'no-store');
+  assert.deepEqual(await ready.json(),{status:'ready',service:'nexuscore',version:'0.1.0'});
+  // Close only this test's runtime pool; PostgreSQL and its data remain available.
+  await runtimePool.end();runtimeClosed=true;
+  const unavailable=await fetch(base+'/ready');
+  assert.equal(unavailable.status,503);
+  assert.equal(unavailable.headers.get('cache-control'),'no-store');
+  assert.deepEqual(await unavailable.json(),{statusCode:503,message:'Database unavailable'});
+  const health=await fetch(base+'/health');
+  assert.equal(health.status,200);
+  assert.deepEqual(await health.json(),{status:'ok',service:'nexuscore',version:'0.1.0'});
+ } finally {
+  await app.close();await pool.end();
+  if(!runtimeClosed)await runtimePool.end();
+ }
+});

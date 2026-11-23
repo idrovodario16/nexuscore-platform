@@ -1,5 +1,11 @@
 # Cambios
 
+## 2026-11-23 · Disponibilidad de PostgreSQL en Core
+
+- Nueva ruta pública `/ready`: consulta la base en cada solicitud y devuelve 200 o 503 genérico, sin detalles internos y sin caché. `/health` conserva su respuesta sin consultar la base.
+- Pruebas de consultas repetidas, recuperación y respuesta HTTP ante fallo del pool; integración con PostgreSQL y rol restringido.
+- OpenAPI, instrucciones de monitoreo y hoja de ruta actualizados. Métricas, alertas, relay y recuperación de backups siguen pendientes.
+
 ## 2026-11-21 · Fechas con desplazamiento horario en la importación web
 
 - Las demos admiten fechas UTC y offsets ISO 8601 en los tres campos temporales, conforme al contrato v1. Se conserva el texto original y la revisión más reciente.

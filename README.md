@@ -149,6 +149,14 @@ Ambos incluyen `contracts/`, `examples/`, `docs/`, Dockerfiles y CI. Se empieza 
 - Fechas en la importación web: se admite UTC (`Z`) y desplazamientos como `-05:00` o `+05:30` en `occurred_at`, `created_at` y `updated_at`. Se conserva el texto de la fecha; las entradas sin zona horaria, numéricas o inválidas se rechazan como lote completo.
 - El esquema usa UUID, fechas ISO 8601 con zona horaria y contrato versionado. No hay borrado físico de operaciones en la API.
 
+## Salud y disponibilidad de la API
+
+- `GET /health` devuelve HTTP 200 con `status: ok` mientras la API responde; no consulta PostgreSQL.
+- `GET /ready` consulta `SELECT 1` con el pool de ejecución en cada solicitud: HTTP 200 con `status: ready` o HTTP 503 con el mensaje genérico `Database unavailable`. Incluye `Cache-Control: no-store` en ambos casos.
+- Ambas rutas son públicas, sin clave ni empresa. Por ejemplo: `curl http://localhost:3000/ready` (en PowerShell, `curl.exe`).
+
+Esta señal permite comprobar la conexión actual a la base de Core sin depender de Insight. No valida migraciones, integridad de datos, entrega del relay ni un SLA. La API sigue comprobando la conexión al arrancar; una caída posterior se refleja en `/ready`. Las métricas, alertas y pruebas de recuperación de backups siguen pendientes.
+
 ## Pruebas y CI
 
 ```bash
