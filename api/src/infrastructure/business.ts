@@ -83,8 +83,19 @@ export class BusinessRepository {
 
  async sell(org:string,input:z.infer<typeof saleInput>,actor:OperationActor){
   return this.operations.transaction(org,async client=>{
-   const previous = await client.query('SELECT id,shipment_id FROM business_sales WHERE organization_id=$1 AND id=$2',[org,input.id]);
-   if(previous.rowCount) return previous.rows[0];
+   const previous = await client.query<{id:string;shipment_id:string;customer_id:string}>(
+    'SELECT id,shipment_id,customer_id FROM business_sales WHERE organization_id=$1 AND id=$2',[org,input.id]);
+   if(previous.rowCount){
+    const sale = previous.rows[0];
+    const items = await client.query<{product_id:string;quantity:number}>(
+     'SELECT product_id,quantity FROM business_sale_items WHERE organization_id=$1 AND sale_id=$2',[org,sale.id]);
+    const quantities = new Map(input.items.map(item=>[item.product_id.toLowerCase(),item.quantity]));
+    if(sale.customer_id!==input.customer_id.toLowerCase() || items.rows.length!==input.items.length ||
+     items.rows.some(item=>quantities.get(item.product_id)!==item.quantity)){
+     throw new BusinessConflict('El identificador de venta ya se usó con otro cliente o detalle.');
+    }
+    return {id:sale.id,shipment_id:sale.shipment_id};
+   }
    const {rows:[customer]} = await client.query('SELECT name FROM business_customers WHERE organization_id=$1 AND id=$2',[org,input.customer_id]);
    if(!customer) throw new BusinessConflict('Selecciona un cliente de esta empresa.');
    const lines = [];

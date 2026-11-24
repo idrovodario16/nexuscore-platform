@@ -18,11 +18,12 @@ Validación de entradas; secretos fuera del frontend; queries parametrizadas; l�
 
 ## Hoja de ruta verificable
 
-Revisión: 2026-11-23. El estado distingue implementaciones parciales y propuestas sin fusionar. Una prueba omitida no satisface el criterio correspondiente; no se considera completo el sistema mientras haya requisitos pendientes o validaciones fallidas.
+Revisión: 2026-11-24. El estado distingue implementaciones parciales y propuestas sin fusionar. Una prueba omitida no satisface el criterio correspondiente; no se considera completo el sistema mientras haya requisitos pendientes o validaciones fallidas.
 
 | Prioridad | Historia | Estado observado | Terminado cuando… |
 | --- | --- | --- | --- |
-| P0 | Fechas con zona horaria en demos | Core PR #6 incorporado; Insight PR #5 abierto con CI aprobada | UTC y offsets positivos/negativos se importan en los tres campos sin cambiar el texto; exportar/reimportar conserva revisión y unicidad; fechas sin zona o inválidas se rechazan sin modificar el estado; pruebas y build aprobados |
+| P0 | Reintentos de ventas | Corrección propuesta en esta rama | Mismo identificador y contenido equivalente devuelve la venta original; cambios de cliente, productos o cantidades dan 409 sin escrituras; UUID equivalentes y orden de líneas no afectan; pruebas de repositorio y HTTP con rol restringido, CI aprobada e incorporación revisada |
+| P0 | Fechas con zona horaria en demos | Core PR #6 e Insight PR #5 incorporados; CI aprobada | UTC y offsets positivos/negativos se importan en los tres campos sin cambiar el texto; exportar/reimportar conserva revisión y unicidad; fechas sin zona o inválidas se rechazan sin modificar el estado; pruebas y build aprobados |
 | P0 | Escrituras serializadas por empresa | Incorporado en [PR #3](https://github.com/idrovodario16/nexuscore-platform/pull/3), CI aprobada | CI con PostgreSQL y rol restringido aprueba exclusión entre mayúsculas/minúsculas, independencia de otra empresa y liberación en commit/rollback |
 | P0 | Validación de productos repetidos en ventas | Incorporado en PR #5; CI aprobada | Pruebas unitarias rechazan duplicados en ambos órdenes y aceptan productos distintos; HTTP devuelve 400 sin cambiar stock, ventas, líneas, movimientos, operaciones, historial ni outbox |
 | P0 | Identidad de operaciones importadas | Incorporado en Core PR #4 e Insight PR #3; CI aprobada | UUID equivalentes no duplican filas ni métricas, se conserva la revisión mayor y empresas distintas siguen separadas; pruebas y build aprobados |
@@ -36,8 +37,8 @@ Revisión: 2026-11-23. El estado distingue implementaciones parciales y propuest
 | P1 | Configuración multisectorial | Tres sectores fijos de ejemplo | Plantillas versionadas por empresa, validación en API y migración probada sin duplicar lógica de negocio |
 | P1 | Sincronización de eventos comerciales | Outbox de operaciones disponible; relay externo; cobertura comercial parcial | Prueba Core → Insight de venta, cobro y cancelación con reintentos, duplicados y revisiones fuera de orden, manteniendo inicio independiente |
 | P1 | Copias de seguridad | Recuperación sin validar | Procedimiento documentado restaura cada base en un entorno aislado y verifica integridad, RPO y RTO medidos |
-| P1 | Disponibilidad de PostgreSQL | Core: propuesta en esta rama; Insight PR #6 abierto con CI aprobada | `/ready` público consulta la base en cada solicitud; 200/503 genérico sin caché; fallo/recuperación y HTTP probados con rol restringido; `/health` permanece independiente; CI aprobada e incorporación revisada |
-| P1 | Monitoreo del relay y servicios | Salud básica y disponibilidad de base propuestas; alertas y métricas pendientes | Pruebas verifican métricas de lag, fallos, reintentos, alertas y cola de errores |
+| P1 | Disponibilidad de PostgreSQL | Core PR #7 e Insight PR #6 incorporados; CI aprobada | `/ready` público consulta la base en cada solicitud; 200/503 genérico sin caché; fallo/recuperación y HTTP probados con rol restringido; `/health` permanece independiente; CI aprobada e incorporación revisada |
+| P1 | Monitoreo del relay y servicios | Salud y disponibilidad de base incorporadas; alertas y métricas pendientes | Pruebas verifican métricas de lag, fallos, reintentos, alertas y cola de errores |
 | P1 | Importación CSV analítica | Pendiente | Mapeo de columnas, validación y reporte de errores probados |
 | P2 | Análisis temporal y anomalías | Pendiente | Métricas explicables verificadas contra datasets conocidos |
 | P2 | Extracción de microservicios | Pendiente de necesidad demostrada | Decisión soportada por carga o autonomía de equipos |
