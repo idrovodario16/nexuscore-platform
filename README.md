@@ -12,6 +12,8 @@ Workspace conecta la interfaz con NestJS y PostgreSQL. Permite iniciar sesión, 
 
 El flujo comercial enlaza **Inventario → Clientes → Ventas y cobros → Despachos**. Registra un producto y una entrada de unidades, crea un cliente y confirma una venta. La venta descuenta el stock y genera el despacho en una sola transacción. Puedes registrar un cobro ya recibido y seguir el envío hasta la entrega. Supervisión puede cancelar un despacho de venta pendiente y sin cobro, lo que repone las unidades. Este piloto registra cobros operativos. La factura fiscal, la contabilidad y las devoluciones posteriores al despacho requieren flujos adicionales.
 
+En la API de Workspace, reintentar una venta con el mismo identificador devuelve la venta y el despacho originales únicamente si coinciden el cliente, los productos y sus cantidades. El orden de las líneas y las mayúsculas de los UUID no afectan la comparación. Reutilizar ese identificador con otro contenido devuelve HTTP 409 sin modificar existencias, historial ni eventos; un pedido distinto necesita un identificador nuevo. Se conservan los precios de la venta original.
+
 1. Copia `.env.example` a `.env` y define `WORKSPACE_DEMO_PASSWORD` con una contraseña ficticia de al menos 12 caracteres.
 2. Ejecuta `docker compose up -d --build` y espera a que la API esté disponible en `http://localhost:3000/health`.
 3. Ejecuta `docker compose exec api npm run seed:workspace` para preparar las dos empresas de prueba.

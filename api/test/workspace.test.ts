@@ -119,7 +119,25 @@ test('Workspace: sesión, permisos, aislamiento, revisión, historial e indicado
   const index = responses.findIndex(response=>response.ok);
   const firstSale = await responses[index].json() as {id:string;shipment_id:string};
   const retry = await post('sales',attempts[index]);
+  assert.equal(retry.status,201);
   assert.deepEqual(await retry.json(),firstSale);
+  const equivalent=await post('sales',{
+   ...attempts[index],id:attempts[index].id.toUpperCase(),customer_id:customer.toUpperCase(),
+   items:[{product_id:product.toUpperCase(),quantity:4}],
+  });
+  assert.equal(equivalent.status,201);
+  assert.deepEqual(await equivalent.json(),firstSale);
+  const beforeChangedRetry=await commercialState();
+  for(const changed of [
+   {...attempts[index],customer_id:randomUUID()},
+   {...attempts[index],items:[{product_id:product,quantity:3}]},
+   {...attempts[index],items:[{product_id:randomUUID(),quantity:4}]},
+   {...attempts[index],items:[...attempts[index].items,{product_id:randomUUID(),quantity:1}]},
+  ]){
+   const rejected=await post('sales',changed);
+   assert.equal(rejected.status,409,await rejected.text());
+   assert.deepEqual(await commercialState(),beforeChangedRetry,'a changed retry must not modify commercial data or events');
+  }
   const stock = async()=>Number((await pool.query('SELECT stock FROM business_products WHERE organization_id=$1 AND id=$2',[orgA,product])).rows[0].stock);
   assert.equal(await stock(),2);
   assert.equal((await patch(pathA+'/'+firstSale.shipment_id,supervisor,'cancelled',1)).status,200);

@@ -1,5 +1,11 @@
 # Cambios
 
+## 2026-11-24 · Reintentos de ventas con contenido distinto
+
+- Reutilizar el identificador de una venta con otro cliente, productos o cantidades devuelve HTTP 409, en lugar de confirmar silenciosamente la venta anterior. No modifica stock, despachos, historial ni outbox.
+- Los reintentos equivalentes conservan la respuesta original y admiten UUID con distinta capitalización y líneas reordenadas; no recalculan precios.
+- Regresión reproducida antes de corregir, pruebas de repositorio y HTTP con rol restringido, y hoja de ruta revisada sin dar por completos los requisitos pendientes.
+
 ## 2026-11-23 · Disponibilidad de PostgreSQL en Core
 
 - Nueva ruta pública `/ready`: consulta la base en cada solicitud y devuelve 200 o 503 genérico, sin detalles internos y sin caché. `/health` conserva su respuesta sin consultar la base.
