@@ -1,5 +1,11 @@
 # Cambios
 
+## 2026-11-26 · Consulta administrativa de usuarios por empresa
+
+- Nueva ruta de solo lectura de Workspace para listar miembros y roles, accesible únicamente a administradores de esa empresa con sesión vigente. Respuesta paginada de 25 usuarios, sin contraseñas ni datos de sesiones y sin caché.
+- Pruebas de permisos, parámetros, aislamiento entre empresas, orden estable, paginación, expiración y pérdida de privilegios; integración con PostgreSQL y rol restringido.
+- OpenAPI, README, estrategia de pruebas y hoja de ruta actualizados. El panel administrativo y las altas, bajas y cambios de membresía siguen pendientes; no cambian esquema, permisos SQL ni eventos compartidos.
+
 ## 2026-11-24 · Reintentos de ventas con contenido distinto
 
 - Reutilizar el identificador de una venta con otro cliente, productos o cantidades devuelve HTTP 409, en lugar de confirmar silenciosamente la venta anterior. No modifica stock, despachos, historial ni outbox.

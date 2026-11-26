@@ -19,6 +19,7 @@ const filters = z.object({
  status:z.enum(statuses).optional(),
  offset:z.coerce.number().int().min(0).max(1000000).default(0),
 }).strict();
+const memberFilters = filters.pick({offset:true});
 type CookieResponse = {setHeader(name:string,value:string):unknown};
 
 function parse<T>(schema:z.ZodType<T>,input:unknown):T {
@@ -104,6 +105,22 @@ export class WorkspaceController {
   const token = readToken(cookies);
   if(token) await this.pool.query('DELETE FROM workspace_sessions WHERE token_hash=$1',[token]);
   setSession(response,'',0);
+ }
+
+ @Get('organizations/:organization/members')
+ async members(@Headers('cookie') cookies:string,@Param('organization') organization:string,@Query() query:unknown){
+  const {org,role} = await this.membership(cookies,organization);
+  if(role!=='admin') throw new HttpException('Solo administración puede consultar los usuarios de esta empresa.',403);
+  const {offset} = parse(memberFilters,query);
+  const result = await this.pool.query(`WITH members AS (
+   SELECT u.id,u.name,u.email,m.role FROM workspace_memberships m
+   JOIN workspace_users u ON u.id=m.user_id WHERE m.organization_id=$1
+  ), page AS (
+   SELECT * FROM members ORDER BY name,id LIMIT 25 OFFSET $2
+  )
+  SELECT (SELECT COALESCE(json_agg(page ORDER BY page.name,page.id),'[]') FROM page) AS items,
+   count(*)::int AS total FROM members`,[org,offset]);
+  return {...result.rows[0],page_size:25};
  }
 
  @Get('organizations/:organization/business')
