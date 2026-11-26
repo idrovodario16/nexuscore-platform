@@ -18,6 +18,11 @@
   ],
   "components": {
     "securitySchemes": {
+      "WorkspaceSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "nexus_workspace"
+      },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer"
@@ -198,6 +203,65 @@
     }
   },
   "paths": {
+    "/workspace-api/organizations/{organization}/members": {
+      "get": {
+        "summary": "List members of an administered company",
+        "description": "Requires a live Workspace session and an admin membership in this company. Returns only id, name, email and company role. Ordered by name and id, 25 items per page. All responses use Cache-Control: no-store.",
+        "security": [{"WorkspaceSession": []}],
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string", "format": "uuid"}
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 0, "maximum": 1000000, "default": 0}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Company members; an offset beyond the end returns an empty items array with the original total",
+            "headers": {
+              "Cache-Control": {"schema": {"type": "string", "const": "no-store"}}
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["items", "total", "page_size"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "maxItems": 25,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["id", "name", "email", "role"],
+                        "properties": {
+                          "id": {"type": "string", "format": "uuid"},
+                          "name": {"type": "string"},
+                          "email": {"type": "string", "format": "email"},
+                          "role": {"type": "string", "enum": ["operator", "supervisor", "admin"]}
+                        }
+                      }
+                    },
+                    "total": {"type": "integer", "minimum": 0},
+                    "page_size": {"type": "integer", "const": 25}
+                  }
+                }
+              }
+            }
+          },
+          "400": {"description": "Invalid organization UUID, offset or query parameter"},
+          "401": {"description": "Missing, invalid or expired Workspace session"},
+          "403": {"description": "No membership or company role is not admin"}
+        }
+      }
+    },
     "/health": {
       "get": {
         "security": [],

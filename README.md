@@ -30,6 +30,14 @@ Recorrido sugerido: registra un producto, recibe unidades, crea un cliente y con
 
 El piloto utiliza credenciales de prueba, una cookie de sesión y autorización por empresa en la API. El Compose local habilita HTTP de desarrollo. El tablero consulta Core y la outbox mantiene el contrato v1. Insight, Connect y Portal quedan para fases posteriores. La demo estática de Pages sigue funcionando por separado.
 
+## Consulta administrativa de usuarios por empresa
+
+La API de Workspace ofrece `GET /workspace-api/organizations/{organization}/members` para consultar quién tiene acceso a una empresa. Requiere una sesión vigente con rol `admin` en esa empresa; la administración de otra empresa no concede ese acceso. Devuelve `items` con `id`, `name`, `email` y `role`, el `total` de miembros y `page_size: 25`. No incluye hashes de contraseñas ni datos de sesiones y sus respuestas llevan `Cache-Control: no-store`.
+
+Usa `?offset=25` para la segunda página. El offset es entero entre 0 y 1.000.000, por defecto 0; el orden es nombre e identificador. Un offset más allá del final devuelve `items: []` conservando el total. Sin sesión válida devuelve 401, sin rol administrador en esa empresa devuelve 403 y los parámetros inválidos devuelven 400. Los permisos se consultan de nuevo en cada solicitud.
+
+Es una consulta de solo lectura disponible en la API, documentada en [OpenAPI](docs/openapi.json). El panel administrativo, crear/desactivar cuentas o empresas y asignar/revocar membresías siguen pendientes. Esta capacidad de Core no requiere NexusInsight.
+
 ## Qué puedes probar en la demo estática
 
 1. Consulta 24 operaciones ficticias de logística, comercio y servicios.
