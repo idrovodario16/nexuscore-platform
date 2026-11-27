@@ -35,6 +35,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Install browser for UI tests
+        run: npx playwright install --with-deps chromium
+      - name: Workspace browser tests
+        run: npm run test:browser
       - run: npm ci
         working-directory: api
       - run: npm run migrate
@@ -45,3 +49,5 @@ jobs:
         working-directory: api
       - run: docker build -f api/Dockerfile -t nexus-api-ci .
       - run: docker build -f Dockerfile.web -t nexus-web-ci .
+      - name: Build Workspace image
+        run: docker build --build-arg VITE_NEXUS_WORKSPACE=1 -f Dockerfile.web -t nexus-workspace-ci .

@@ -36,7 +36,9 @@ La API de Workspace ofrece `GET /workspace-api/organizations/{organization}/memb
 
 Usa `?offset=25` para la segunda página. El offset es entero entre 0 y 1.000.000, por defecto 0; el orden es nombre e identificador. Un offset más allá del final devuelve `items: []` conservando el total. Sin sesión válida devuelve 401, sin rol administrador en esa empresa devuelve 403 y los parámetros inválidos devuelven 400. Los permisos se consultan de nuevo en cada solicitud.
 
-Es una consulta de solo lectura disponible en la API, documentada en [OpenAPI](docs/openapi.json). El panel administrativo, crear/desactivar cuentas o empresas y asignar/revocar membresías siguen pendientes. Esta capacidad de Core no requiere NexusInsight.
+En Workspace, una cuenta administradora puede abrir **Usuarios** para consultar los nombres, correos y roles de la empresa seleccionada, recorrer sus páginas y actualizar el listado. La vista muestra carga y errores; una sesión expirada vuelve al acceso. Al cambiar de empresa se cancela la consulta y se regresa a Resumen. La opción no aparece para roles de operación o supervisión; la API comprueba los permisos en cada solicitud.
+
+Es una consulta de solo lectura, documentada en [OpenAPI](docs/openapi.json). Crear/desactivar cuentas o empresas y asignar/revocar membresías siguen pendientes. Esta capacidad de Core no requiere NexusInsight y no está disponible en la demo estática sin backend.
 
 ## Qué puedes probar en la demo estática
 
@@ -178,6 +180,10 @@ npm run build
 Para NestJS: `cd api`, `npm ci`, `npm test`. Las pruebas de integración requieren PostgreSQL y `RUN_INTEGRATION=1`, junto con las variables de conexión y acceso. Sin ese indicador se omiten explícitamente; no se simula una validación real de PostgreSQL. CI levanta PostgreSQL 16 y ejecuta esas pruebas. Ver [estrategia y criterios](docs/testing.md).
 
 La demo principal se publica en **GitHub Pages** mediante `.github/workflows/pages.yml` al actualizar `main`. El flujo ejecuta pruebas y compila React antes de desplegar `dist/`. GitHub Pages aloja solo el frontend; las APIs y PostgreSQL se ejecutan por separado. Las versiones previas de Sites son alojamientos independientes y no se actualizan con este flujo. El historial de Actions muestra el estado real de cada publicación.
+
+### Pruebas de navegador
+
+Tras `npm ci`, instala Chromium con `npx playwright install chromium` y ejecuta `npm run test:browser`. En Linux puede requerirse `--with-deps`, como en CI. Playwright inicia Vite en el puerto local 4175 y ejecuta ocho casos en escritorio y móvil. Usa respuestas API ficticias para navegación, paginación, errores, permisos visibles y cambios de empresa; no inicia sesión en cuentas reales. La autorización e integración real de la API se comprueban por separado con PostgreSQL y rol restringido. El recorrido de navegador contra un backend real completo sigue pendiente.
 
 ## Alcance y evolución
 

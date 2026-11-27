@@ -14,6 +14,9 @@
 .nx-history ol { display: grid; gap: 12px; padding-left: 24px; margin: 0; }
 .nx-history li span { display: block; }
 .nx-sections { display: flex; gap: 8px; flex-wrap: wrap; }
+.nx-members table { width: 100%; min-width: 0; table-layout: fixed; }
+.nx-members th, .nx-members td { padding: 12px 10px; white-space: normal; overflow-wrap: anywhere; }
+.nx-members td { font-size: 13px; color: inherit; }
 .nx-business-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .nx-workspace .nx-inline-form { display: grid; align-items: end; grid-template-columns: minmax(0,2fr) minmax(0,1fr) auto; gap: 14px; }
 @media (max-width: 620px) {
