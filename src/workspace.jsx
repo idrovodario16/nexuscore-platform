@@ -1,6 +1,7 @@
 import React,{useEffect,useState} from 'react';
 import {transitions} from './model';
 import {Business} from './business';
+import {Members} from './members';
 import './workspace.css';
 
 const labels = {pending:'Pendiente',in_progress:'En tránsito',completed:'Entregado',cancelled:'Cancelado'};
@@ -36,6 +37,8 @@ export function Workspace(){
   return request('/session',{signal}).then(next=>{
    setSession(next);
    setOrg(next.organizations[0]?.id ?? '');
+   setSection('summary');
+   setShipmentSearch('');
   });
  }
 
@@ -102,7 +105,7 @@ export function Workspace(){
    </section> :
    <>
     <div className="nx-company">
-     <label>Empresa<select value={org} onChange={event=>setOrg(event.target.value)} disabled={!organization||busy}>
+     <label>Empresa<select value={org} onChange={event=>{setOrg(event.target.value);navigate('summary');}} disabled={!organization||busy}>
       {!organization&&<option value="">Sin empresas asignadas</option>}
       {session.organizations.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}
      </select></label>
@@ -110,11 +113,13 @@ export function Workspace(){
     </div>
     {organization ? <>
      <nav className="nx-sections" aria-label="Módulos de la empresa">
-      {[['summary','Resumen'],['inventory','Inventario'],['customers','Clientes'],['sales','Ventas y cobros'],['shipments','Despachos']]
+      {[['summary','Resumen'],['inventory','Inventario'],['customers','Clientes'],['sales','Ventas y cobros'],['shipments','Despachos'],
+       ...(organization.role==='admin'?[['members','Usuarios']]:[])]
        .map(([key,label])=><button key={key} aria-current={section===key?'page':undefined}
         className={section===key?'primary':undefined} onClick={()=>navigate(key)}>{label}</button>)}
      </nav>
-     {section==='shipments' ? <Shipments key={org+shipmentSearch} organization={organization}
+     {section==='members' ? <Members key={org} organization={organization} request={request} onExpired={expire}/> :
+      section==='shipments' ? <Shipments key={org+shipmentSearch} organization={organization}
       initialSearch={shipmentSearch} onExpired={expire}/> :
       <Business key={org} organization={organization} section={section} request={request}
        onNavigate={navigate} onExpired={expire}/>}

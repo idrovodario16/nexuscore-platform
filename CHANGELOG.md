@@ -1,5 +1,17 @@
 # Cambios
 
+## 2026-11-28 · Validación de usuarios con backend real
+
+- Se amplía la validación de la vista Usuarios con un recorrido de Chromium a través del proxy real de Vite, NestJS y PostgreSQL usando el rol restringido.
+- Comprueba login, cookie, roles por empresa, pérdida de privilegios, expiración y logout. CI prepara la API y la base antes del navegador; la ejecución real exige activación explícita y usa únicamente registros ficticios propios.
+- Documentación y hoja de ruta actualizadas. No añade funciones de escritura ni cambia cuentas existentes, esquema o contrato de eventos. Otros recorridos integrales de negocio siguen pendientes.
+
+## 2026-11-27 · Vista de usuarios en Workspace
+
+- La sección Usuarios permite a administradores consultar miembros y roles de su empresa, actualizar y recorrer páginas. Oculta la navegación a otros roles y muestra carga, errores y sesión expirada.
+- Cambiar de empresa vuelve a Resumen y cancela la consulta anterior; actualizar o cambiar de página oculta datos anteriores. La tabla adapta nombres, correos y roles a pantallas pequeñas.
+- Ocho pruebas Chromium de escritorio/móvil con API ficticia, incorporadas a CI con Playwright fijado en el lock. La integración real de permisos continúa cubierta por PostgreSQL; la gestión de cuentas y membresías permanece pendiente.
+
 ## 2026-11-26 · Consulta administrativa de usuarios por empresa
 
 - Nueva ruta de solo lectura de Workspace para listar miembros y roles, accesible únicamente a administradores de esa empresa con sesión vigente. Respuesta paginada de 25 usuarios, sin contraseñas ni datos de sesiones y sin caché.
