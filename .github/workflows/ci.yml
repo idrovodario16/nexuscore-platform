@@ -37,8 +37,6 @@ jobs:
       - run: npm run build
       - name: Install browser for UI tests
         run: npx playwright install --with-deps chromium
-      - name: Workspace browser tests
-        run: npm run test:browser
       - run: npm ci
         working-directory: api
       - run: npm run migrate
@@ -47,6 +45,10 @@ jobs:
         run: psql "${DATABASE_URL/postgresql+psycopg/postgresql}" -v ON_ERROR_STOP=1 -f api/scripts/runtime-role.sql
       - run: npm test
         working-directory: api
+      - name: Workspace browser tests with real backend
+        run: npm run test:browser
+        env:
+          WORKSPACE_BROWSER_INTEGRATION: '1'
       - run: docker build -f api/Dockerfile -t nexus-api-ci .
       - run: docker build -f Dockerfile.web -t nexus-web-ci .
       - name: Build Workspace image

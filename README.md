@@ -183,7 +183,9 @@ La demo principal se publica en **GitHub Pages** mediante `.github/workflows/pag
 
 ### Pruebas de navegador
 
-Tras `npm ci`, instala Chromium con `npx playwright install chromium` y ejecuta `npm run test:browser`. En Linux puede requerirse `--with-deps`, como en CI. Playwright inicia Vite en el puerto local 4175 y ejecuta ocho casos en escritorio y móvil. Usa respuestas API ficticias para navegación, paginación, errores, permisos visibles y cambios de empresa; no inicia sesión en cuentas reales. La autorización e integración real de la API se comprueban por separado con PostgreSQL y rol restringido. El recorrido de navegador contra un backend real completo sigue pendiente.
+Tras `npm ci`, instala Chromium con `npx playwright install chromium` y ejecuta `npm run test:browser`. En Linux puede requerirse `--with-deps`, como en CI. Por defecto Playwright inicia Vite en el puerto local 4175 y ejecuta ocho casos en escritorio y móvil con respuestas API ficticias, sin conectar a una base local.
+
+En CI, después de compilar la API, aplicar migraciones y preparar el rol restringido, `RUN_INTEGRATION=1` junto con `WORKSPACE_BROWSER_INTEGRATION=1` habilita un noveno caso con backend real. Requiere una base PostgreSQL aislada de pruebas y el puerto local 3000 libre. Crea empresas y cuentas ficticias con UUID nuevos, inicia NestJS con el rol restringido y usa el proxy de Vite para probar login, consulta de miembros, permisos por empresa, pérdida de privilegios, expiración y logout. Limpia solo sus propios registros y cierra el servidor; la cookie HTTP de prueba no cambia la configuración segura de producción. Otros recorridos completos, como ventas y cobros desde el navegador, siguen pendientes.
 
 ## Alcance y evolución
 

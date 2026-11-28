@@ -18,11 +18,12 @@ Validación de entradas; secretos fuera del frontend; queries parametrizadas; l�
 
 ## Hoja de ruta verificable
 
-Revisión: 2026-11-27. El estado distingue implementaciones parciales y propuestas sin fusionar. Una prueba omitida no satisface el criterio correspondiente; no se considera completo el sistema mientras haya requisitos pendientes o validaciones fallidas.
+Revisión: 2026-11-28. El estado distingue implementaciones parciales y propuestas sin fusionar. Una prueba omitida no satisface el criterio correspondiente; no se considera completo el sistema mientras haya requisitos pendientes o validaciones fallidas.
 
 | Prioridad | Historia | Estado observado | Terminado cuando… |
 | --- | --- | --- | --- |
 | P0 | Vista de usuarios por empresa | Propuesta en esta rama; lectura únicamente | Admin accede a Usuarios con páginas 25/3, estados de carga/error y sesión expirada; cambio de empresa cancela y oculta datos anteriores; navegación de otros roles bloqueada; Chromium escritorio/móvil y CI aprobados, incorporación revisada |
+| P0 | Navegador de usuarios con backend real | Validación propuesta en Core PR #10 | Chromium inicia sesión y consulta por Vite/NestJS/PostgreSQL con rol restringido; prueba acceso por empresa, pérdida de privilegios, expiración y logout sin respuestas simuladas; limpia sus propios datos ficticios; CI aprobada e incorporación revisada |
 | P0 | Consulta de usuarios por empresa | API incorporada en Core PR #9; CI aprobada | Solo admin de esa empresa obtiene miembros/roles, sin datos de contraseña o sesión; paginación estable de 25; permisos vigentes, expiración y aislamiento probados con rol restringido; CI aprobada e incorporación revisada |
 | P0 | Reintentos de ventas | Incorporado en Core PR #8; CI aprobada | Mismo identificador y contenido equivalente devuelve la venta original; cambios de cliente, productos o cantidades dan 409 sin escrituras; UUID equivalentes y orden de líneas no afectan; pruebas de repositorio y HTTP con rol restringido, CI aprobada e incorporación revisada |
 | P0 | Fechas con zona horaria en demos | Core PR #6 e Insight PR #5 incorporados; CI aprobada | UTC y offsets positivos/negativos se importan en los tres campos sin cambiar el texto; exportar/reimportar conserva revisión y unicidad; fechas sin zona o inválidas se rechazan sin modificar el estado; pruebas y build aprobados |
